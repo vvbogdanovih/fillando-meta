@@ -238,7 +238,45 @@ Fillando — повноцінний e-commerce додаток для прода�
 }
 ```
 
-### 4.2 Хлібні крихти та SEO
+### 4.2 Пошук товарів
+
+| | |
+|---|---|
+| **Маршрут FE** | `/search?q={query}` |
+| **Endpoint** | `GET /products/search` |
+| **Доступ** | Публічний |
+
+**Query-параметри:**
+
+| Параметр | Тип | За замовч. | Опис |
+|----------|-----|-----------|------|
+| `q` | string | — | **Обов'язковий**, пошуковий запит (мін. 2, макс. 100 символів) |
+| `page` | number | 1 | Номер сторінки |
+| `limit` | number | 20 | Кількість на сторінку (макс. 100) |
+
+**Бізнес-логіка:**
+- MongoDB text index по полях `name` (вага 10), `attributes.v` (5), `attributes.l` (3), `description.html` (1) з `default_language: 'none'` (без стемінгу — точне співпадіння токенів, оптимально для назв матеріалів PLA, PETG, eSUN тощо)
+- Паралельний пошук: повнотекстовий пошук по products + пошук за префіксом SKU у variants
+- SKU-збіги пріоритизуються у видачі, потім за текстовим score; товари без наявності — в кінці
+- Результати повертаються у форматі, ідентичному каталогу (`CatalogItem[]` + `pagination`)
+
+**Відповідь:**
+```json
+{
+  "items": [{ "id", "name", "slug", "sku", "price", "stock", "v_value", "attributes", "main_image" }],
+  "pagination": { "total": 42, "page": 1, "limit": 20, "totalPages": 3 }
+}
+```
+
+**UI:**
+- Поле пошуку в хедері: завжди видиме на десктопі, toggle по іконці на мобільних
+- На Enter навігація на `/search?q=...`
+- Мінімум 2 символи для подання запиту
+- Сторінка результатів: заголовок, кількість результатів, сітка товарів, пагінація
+- Порожній стан: `"За запитом "{q}" нічого не знайдено"`
+- Без запиту: `"Введіть запит для пошуку"`
+
+### 4.3 Хлібні крихти та SEO
 
 - Breadcrumb schema (JSON-LD) на сторінках каталогу та товару
 - Категорія визначається через `GET /categories/slug/{slug}`
@@ -839,6 +877,8 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `variant_type` | `{ key, label }` | optional |
 | `attributes` | array `[{ k, l, v }]` | — |
 
+**Індекси:** `attributes.k + attributes.v`, text index (`name`, `description.html`, `attributes.v`, `attributes.l`)
+
 ### 18.6 Product Variants
 
 | Поле | Тип | Обмеження |
@@ -944,6 +984,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `/auth/register` | Реєстрація |
 | `/auth/success` | OAuth callback |
 | `/{categorySlug}/{subcategorySlug}` | Каталог товарів |
+| `/search?q={query}` | Пошук товарів |
 | `/products/{slug}` | Сторінка товару |
 | `/checkout` | Оформлення замовлення |
 | `/checkout/success` | Успішне замовлення |
