@@ -20,7 +20,7 @@
 8. [Замовлення — клієнт](#8-замовлення--клієнт)
 9. [Адмін-панель — Замовлення](#9-адмін-панель--замовлення)
 10. [Адмін-панель — Товари](#10-адмін-панель--товари)
-11. [Адмін-панель — Категорії та підкатегорії](#11-адмін-панель--категорії-та-підкатегорії)
+11. [Адмін-панель — Категорії](#11-адмін-панель--категорії)
 12. [Адмін-панель — Виробники (Vendors)](#12-адмін-панель--виробники-vendors)
 13. [Адмін-панель — Знижкові купони](#13-адмін-панель--знижкові-купони)
 14. [Адмін-панель — Реквізити оплати](#14-адмін-панель--реквізити-оплати)
@@ -30,6 +30,8 @@
 18. [Моделі даних](#18-моделі-даних)
 19. [Перелік маршрутів](#19-перелік-маршрутів)
 20. [Нереалізований функціонал (заглушки)](#20-нереалізований-функціонал-заглушки)
+21. [Оптові заявки (Wholesale Inquiries)](#21-оптові-заявки-wholesale-inquiries)
+22. [Сторінка FAQ](#22-сторінка-faq)
 
 ---
 
@@ -205,15 +207,18 @@ Fillando — повноцінний e-commerce додаток для прода�
 
 | | |
 |---|---|
-| **Маршрут FE** | `/{categorySlug}/{subcategorySlug}` |
+| **Маршрут FE** | `/{categorySlug}` (напр. `/filament`) |
 | **Endpoint** | `GET /products/catalog` |
 | **Доступ** | Публічний |
+
+Старі дворівневі URL (`/vytratni-materialy-dlia-3d-druku/filament`) віддають 308-редірект
+на плоскі (`/filament`) через `redirects()` у `next.config.ts`.
 
 **Query-параметри:**
 
 | Параметр | Тип | За замовч. | Опис |
 |----------|-----|-----------|------|
-| `subcategory_id` | string | — | **Обов'язковий**, ObjectId підкатегорії |
+| `category_id` | string | — | **Обов'язковий**, ObjectId категорії |
 | `page` | number | 1 | Номер сторінки (від 1) |
 | `limit` | number | 20 | Кількість на сторінку (макс. 100) |
 | `price_min` | number | — | Мінімальна ціна |
@@ -221,10 +226,10 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `sort` | string | `newest` | Сортування |
 | `[attribute_key]` | string | — | Динамічні фільтри за атрибутами (через кому) |
 
-**Приклад:** `?subcategory_id=xxx&vyrobnyk=Sony,LG&price_min=100&price_max=500`
+**Приклад:** `?category_id=xxx&vyrobnyk=Sony,LG&price_min=100&price_max=500`
 
 **Бізнес-логіка:**
-- Агрегація MongoDB: match (subcategory, status=active, ціна, атрибути) → facet (items + total)
+- Агрегація MongoDB: match (category, status=active, ціна, атрибути) → facet (items + total)
 - Атрибутні фільтри: OR всередині одного атрибута, AND між різними
 - Фронтенд: бічна панель з фільтрами (слайдер ціни, мультиселекти), пагінація через URL
 
@@ -295,7 +300,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 ```json
 {
   "variant": { "_id", "product_id", "name", "slug", "sku", "price", "stock", "images", "v_value", "status" },
-  "product": { "_id", "name", "category_id", "subcategory_id", "vendor_id", "description", "variant_type", "attributes" }
+  "product": { "_id", "name", "category_id", "vendor_id", "description", "variant_type", "attributes" }
 }
 ```
 
@@ -587,7 +592,6 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `name` | string | Назва товару |
 | `vendor_id` | ObjectId | Виробник (dropdown) |
 | `category_id` | ObjectId | Категорія (dropdown) |
-| `subcategory_id` | ObjectId | Підкатегорія (dropdown) |
 | `description` | `{ json, html }` | Опис (rich text editor, Quill delta + HTML) |
 | `attributes` | array | Атрибути `[{ l: "Виробник", v: "Sony" }]` (key генерується з label) |
 | `variant_type` | `{ key, label }` | Тип варіанту (напр. `{ key: "color", label: "Колір" }`) |
@@ -638,7 +642,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 
 ---
 
-## 11. Адмін-панель — Категорії та підкатегорії
+## 11. Адмін-панель — Категорії
 
 | | |
 |---|---|
@@ -646,20 +650,21 @@ Fillando — повноцінний e-commerce додаток для прода�
 | **Доступ запису** | Role.ADMIN |
 | **Доступ читання** | Публічний |
 
-### 11.1 Категорії
+Категорії однорівневі (плоскі). Підкатегорії було прибрано: колишні підкатегорії
+промоутнуто до категорій міграцією `fillando-be/scripts/migrations/flatten-categories.js`,
+атрибути фільтрації (`required_attributes`) тепер живуть на самій категорії.
 
 **Endpoints:**
 
 | Метод | Endpoint | Опис |
 |-------|----------|------|
-| `GET` | `/categories` | Всі категорії |
-| `GET` | `/categories/with-subcategories` | Категорії з підкатегоріями та атрибутами |
+| `GET` | `/categories` | Всі категорії (з атрибутами) |
 | `GET` | `/categories/slug/{slug}` | Категорія за slug |
 | `GET` | `/categories/{id}` | Категорія за ID |
 | `POST` | `/categories` | Створити (ADMIN) |
 | `PATCH` | `/categories/{id}` | Оновити (ADMIN) |
 | `PUT` | `/categories/{id}` | Замінити повністю (ADMIN) |
-| `DELETE` | `/categories/{id}` | Видалити з усіма підкатегоріями (ADMIN) |
+| `DELETE` | `/categories/{id}` | Видалити (ADMIN) |
 
 **Поля категорії:**
 
@@ -669,27 +674,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `slug` | string | URL slug (унікальний) |
 | `image` | string | URL зображення (опц.) |
 | `order` | number | Порядок відображення (мін. 0) |
-
-### 11.2 Підкатегорії
-
-**Endpoints:**
-
-| Метод | Endpoint | Опис |
-|-------|----------|------|
-| `GET` | `/categories/{id}/subcategories` | Всі підкатегорії |
-| `GET` | `/categories/{id}/subcategories/{subId}` | Одна підкатегорія |
-| `POST` | `/categories/{id}/subcategories` | Додати (ADMIN) |
-| `PATCH` | `/categories/{id}/subcategories/{subId}` | Оновити (ADMIN) |
-| `PUT` | `/categories/{id}/subcategories/{subId}` | Замінити (ADMIN) |
-| `DELETE` | `/categories/{id}/subcategories/{subId}` | Видалити (ADMIN) |
-
-**Поля підкатегорії:**
-
-| Поле | Тип | Опис |
-|------|-----|------|
-| `name` | string | Назва |
-| `slug` | string | URL slug |
-| `required_attributes` | array | Атрибути фільтрації |
+| `required_attributes` | array | Атрибути фільтрації каталогу |
 
 **Структура `required_attribute`:**
 
@@ -925,7 +910,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `slug` | string | unique, required |
 | `image` | string | default: null |
 | `order` | number | default: 0 |
-| `subcategories` | embedded array | Subcategory objects |
+| `required_attributes` | embedded array | `{ key, label, filter_type, unit }` |
 
 ### 18.4 Vendors
 
@@ -940,7 +925,6 @@ Fillando — повноцінний e-commerce додаток для прода�
 |------|-----|-----------|
 | `name` | string | required |
 | `category_id` | ObjectId → Category | required |
-| `subcategory_id` | ObjectId | required |
 | `vendor_id` | ObjectId → Vendor | required |
 | `description` | `{ json, html }` | optional |
 | `variant_type` | `{ key, label }` | optional |
@@ -953,7 +937,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 | Поле | Тип | Обмеження |
 |------|-----|-----------|
 | `product_id` | ObjectId → Product | required |
-| `subcategory_id` | ObjectId | required |
+| `category_id` | ObjectId → Category | required (денормалізовано з product) |
 | `name` | string | required |
 | `slug` | string | unique, required |
 | `sku` | string | unique, required |
@@ -964,7 +948,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `vendor_product_sku` | string | optional |
 | `status` | enum | `draft` / `active` / `archived` |
 
-**Індекси:** `product_id`, `subcategory_id + status`, `slug` (unique), `sku` (unique)
+**Індекси:** `product_id`, `category_id + status`, `slug` (unique), `sku` (unique)
 
 ### 18.7 Carts
 
@@ -1040,6 +1024,19 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `typeOfWarehouse` | string | required (UUID) |
 | `postalCode` | string | required |
 
+### 18.13 Wholesale Inquiries
+
+Колекція `wholesale_inquiries`.
+
+| Поле | Тип | Обмеження |
+|------|-----|-----------|
+| `name` | string | required |
+| `phone` | string | required, `+380XXXXXXXXX` |
+| `email` | string | required |
+| `quantity` | string | required, вільний формат («20 кг/міс») |
+| `comment` | string \| null | optional |
+| `status` | enum | `NEW` (default) \| `PROCESSED` |
+
 ---
 
 ## 19. Перелік маршрутів
@@ -1048,11 +1045,13 @@ Fillando — повноцінний e-commerce додаток для прода�
 
 | Маршрут | Опис |
 |---------|------|
-| `/` | Головна сторінка |
+| `/` | Головна сторінка (включно з блоком оптових заявок) |
+| `/wholesale` | Оптова закупка та співпраця (форма заявки, контакти) |
+| `/faq` | Часті запитання (акордеони, FAQPage JSON-LD) |
 | `/auth/login` | Логін |
 | `/auth/register` | Реєстрація |
 | `/auth/success` | OAuth callback |
-| `/{categorySlug}/{subcategorySlug}` | Каталог товарів |
+| `/{categorySlug}` | Каталог товарів (напр. `/filament`) |
 | `/search?q={query}` | Пошук товарів |
 | `/products/{slug}` | Сторінка товару |
 | `/checkout` | Оформлення замовлення |
@@ -1082,7 +1081,15 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `/admin/payment-details` | Реквізити оплати |
 | `/admin/payment-details/iban` | IBAN реквізити |
 | `/admin/users` | Користувачі (заглушка) |
+| `/admin/wholesale` | Оптові заявки |
 | `/admin/style-guide` | Showcase компонентів |
+
+### 19.4 Навігація в хедері
+
+Пункти основної навігації — спільна константа `NAV_LINKS` (`fillando-fe/src/common/constants/navigation.constants.ts`): Матеріали, Прайс-лист, Співпраця, FAQ. Пункту «Головна» немає — на головну веде лого.
+
+- **Desktop (≥768px):** горизонтальне меню + пошук.
+- **Mobile:** бургер-кнопка → drawer зліва (`MobileMenu`, Radix Dialog — той самий патерн, що CartSidebar) з пунктами `NAV_LINKS` та контактами (телефон, Telegram, Viber).
 
 ---
 
@@ -1096,6 +1103,46 @@ Fillando — повноцінний e-commerce додаток для прода�
 | Управління користувачами (адмін) | Сторінка-заглушка |
 | Налаштування акаунту | Сторінка-заглушка |
 | Реквізити LiqPay/MonoPay/Cash | Сторінки-заглушки |
+
+---
+
+## 21. Оптові заявки (Wholesale Inquiries)
+
+B2B-канал для оптових закупок та індивідуальних поставок.
+
+### 21.1 Публічні точки входу
+
+- **Сторінка `/wholesale`** — hero, 3 переваги (ціни / поставки / доставка), інлайн-форма заявки + блок контактів. Пункт «Співпраця» в хедері та футері.
+- **Блок «Співпраця» на головній** — заголовок «Цікавить оптова закупка чи поставки спеціально для вас?», контакти (телефон, Viber, Telegram — спільні константи `CONTACTS`), кнопка «Заповнити форму» (діалог) і лінк «Детальніше про співпрацю» → `/wholesale`.
+- **Сторінка товару** — картка-лінк «Цікавить оптова закупка чи поставки для бізнесу?» під вибором варіації → `/wholesale`.
+
+**Форма** (спільний компонент `WholesaleInquiryForm`, RHF + Zod): ім'я, телефон (`+380XXXXXXXXX`), email, бажана кількість пластику (вільний текст), коментар (опційно). Успішний сабміт → toast, reset форми (у діалозі — закриття).
+
+### 21.2 Backend
+
+| Endpoint | Метод | Доступ | Опис |
+|----------|-------|--------|------|
+| `/api/wholesale-inquiries/` | POST | Публічний | Створення заявки |
+| `/api/wholesale-inquiries/` | GET | ADMIN | Пагінований список, фільтр за статусом |
+| `/api/wholesale-inquiries/{id}/status` | PATCH | ADMIN | Зміна статусу (`NEW` ⇄ `PROCESSED`) |
+
+Після створення заявки — fire-and-forget email-сповіщення на `SERVICE_EMAIL` (Resend); помилка пошти логується та не фейлить запит. Модель даних — див. [18.13](#1813-wholesale-inquiries). Деталі: `fillando-be/src/docs/WHOLESALE_INQUIRY.md`.
+
+### 21.3 Адмін-панель
+
+`/admin/wholesale` — таблиця заявок (дата, ім'я, клікабельні телефон/email, кількість, коментар, статус-badge), фільтр за статусом, пагінація, кнопка перемикання статусу.
+
+---
+
+## 22. Сторінка FAQ
+
+Статична сторінка `/faq` (тільки FE, без бекенду). Контент — TypeScript-константа `FAQ_SECTIONS` у `fillando-fe/src/app/(root)/faq/faq.constants.ts`.
+
+- **5 секцій:** Замовлення та оплата / Доставка / Повернення та обмін / Філамент і друк / Співпраця та опт (12 запитань). Секція опту лінкує на `/wholesale`.
+- **UI:** акордеони (Radix Accordion, новий компонент `ui/accordion.tsx`, `type='multiple'`), блок контактів унизу (телефон, Telegram, Viber зі спільних `CONTACTS`).
+- **SEO:** JSON-LD `FAQPage` генерується з тієї ж константи; сторінка додана в sitemap; пункт «FAQ» у хедері, мобільному меню та футері.
+
+Редагування контенту — через зміну константи та деплой FE.
 
 ---
 
