@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "repos/fillando-be"
+		},
+		{
+			"path": "repos/fillando-fe"
+		}
+	],
+	"settings": {}
+}
