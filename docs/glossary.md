@@ -1,0 +1,66 @@
+# Glossary
+
+Shared vocabulary for **Fillando** — an online shop for 3D-printing consumables
+(filaments, resins, accessories). One agreed definition per term so BA,
+developers, and QA mean the same thing. UI language is Ukrainian; this glossary
+notes both the Ukrainian business term and the technical entity/route where
+relevant. Keep it grouped; add terms as they appear in the
+[FRD](requirements/FRD.md).
+
+## Core
+
+| Term | Definition |
+|------|------------|
+| **Fillando** | The 3D-printing consumables e-commerce platform; the product this repository family builds. |
+| **FRD** | Functional Requirements Document — the source of truth for implemented behaviour ([`requirements/FRD.md`](requirements/FRD.md)). |
+| **TD** | Technical Design — the design of a feature before it is built ([`designs/`](designs/)). |
+| **ADR** | Architecture Decision Record — one significant decision and its rationale ([`adr/`](adr/)). |
+
+## Roles & auth
+
+| Term | Definition |
+|------|------------|
+| **USER** | Default authenticated customer role — can browse, manage a cart, checkout, and view own orders. |
+| **ADMIN** | Back-office role (`Role.ADMIN`) — manages products, categories, vendors, coupons, payment details, and orders. |
+| **Guest** | Unauthenticated visitor; can browse and build a cart stored in `localStorage` (see **Cart**). |
+| **Google OAuth** | Sign-in via Google, in addition to email/password (Argon2 + pepper). Sessions use JWT in httpOnly cookies. |
+| **Refresh token** | Long-lived token (stored server-side + httpOnly cookie) used to silently renew the access token; the FE Axios client refreshes automatically. |
+
+## Catalog
+
+| Term | Definition |
+|------|------------|
+| **Product (Товар)** | A catalog item (e.g. a filament); has categories, a vendor, media, and one or more variants. |
+| **Product Variant** | A purchasable variation of a product (e.g. colour / weight) carrying its own price and stock. |
+| **Category (Категорія)** | Hierarchical grouping of products; drives catalog navigation and breadcrumbs. |
+| **Vendor (Виробник)** | The manufacturer/brand of a product, managed in the admin panel. |
+| **Breadcrumbs / SEO** | Category-path breadcrumbs plus SEO metadata rendered on catalog and product pages. |
+
+## Cart & orders
+
+| Term | Definition |
+|------|------------|
+| **Cart (Кошик)** | Dual-mode basket: **guest** carts live in `localStorage`; **authenticated** carts live on the server via API and merge on login. |
+| **Checkout (Оформлення замовлення)** | The order-creation flow: delivery (Nova Post) + contact details → order created on the backend. |
+| **Order (Замовлення)** | A placed order with line items, delivery info, status, and payment state; visible to the customer and manageable by admins. |
+| **Discount Coupon (Знижковий купон)** | Admin-created code applying a discount at checkout. |
+| **Wholesale Inquiry (Оптова заявка)** | A bulk-purchase request submitted via a public form and triaged in the admin panel. |
+
+## Payment & delivery
+
+| Term | Definition |
+|------|------------|
+| **IBAN payment** | Payment by bank transfer: the customer receives an order-confirmation email containing the IBAN / payment details. There is no online acquiring in the current scope. |
+| **Payment Details (Реквізити оплати)** | Admin-managed bank requisites (IBAN etc.) included in confirmation emails. |
+| **Nova Post (Нова Пошта)** | Ukrainian delivery carrier integrated for city/warehouse lookup during checkout; cities and warehouses are synced and searchable. |
+| **Warehouse (Відділення)** | A Nova Post branch/parcel-locker the customer selects as the delivery point. |
+
+## Infrastructure
+
+| Term | Definition |
+|------|------------|
+| **S3** | AWS S3 object storage for product/media uploads via presigned URLs. |
+| **Resend** | Transactional email provider (order confirmations with payment details). |
+| **API prefix** | Backend routes have no global prefix; `/api` is added by Nginx on production only (see [environments](environments.md)). |
+
+<!-- Add domain terms below as they are introduced. -->

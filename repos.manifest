@@ -1,0 +1,16 @@
+# Fillando — component repository manifest
+#
+# Used by scripts/clone-all.sh, pull-all.sh, checkout-all.sh and status-all.sh
+# to materialize the `repos/` working tree. One component per line:
+#
+#   <name>  <git-url>  <branch>
+#
+# Lines starting with '#' and blank lines are ignored.
+# Columns are separated by any whitespace.
+#
+# URLs use the SSH host alias `github_vvbogdanovih` (configured in ~/.ssh/config).
+# Make sure that host alias points at github.com with the right deploy/user key.
+
+# --- Application components ---
+fillando-be   git@github_vvbogdanovih:vvbogdanovih/fillando-be.git   main
+fillando-fe   git@github_vvbogdanovih:vvbogdanovih/fillando-fe.git   main

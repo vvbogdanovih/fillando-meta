@@ -1,35 +1,35 @@
 #!/usr/bin/env bash
 # ============================================================
-# clone-all.sh — Clone Fillando child repositories
-# Idempotent: safe to re-run; skips repos that already exist.
+# clone-all.sh — Clone Fillando component repositories into ./repos
+# Reads repos.manifest. Idempotent: skips repos that already exist.
+# Run pull-all.sh to update existing checkouts.
 # ============================================================
 set -euo pipefail
 
-SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-ROOT="$(dirname "$SCRIPT_DIR")"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+MANIFEST="$ROOT/repos.manifest"
+REPOS_DIR="$ROOT/repos"
 
-GITHUB_HOST="github_vvbogdanovih"
-ORG="vvbogdanovih"
-BRANCH="main"
+if [[ ! -f "$MANIFEST" ]]; then
+  echo "error: manifest not found at $MANIFEST" >&2
+  exit 1
+fi
 
-declare -A REPOS=(
-	[fillando-be]="fillando-be"
-	[fillando-fe]="fillando-fe"
-)
+mkdir -p "$REPOS_DIR"
 
-for dir in "${!REPOS[@]}"; do
-	repo="${REPOS[$dir]}"
-	target="$ROOT/$dir"
+while read -r name url branch _rest; do
+  # Skip comments and blank lines
+  [[ -z "${name:-}" || "$name" == \#* ]] && continue
 
-	if [ -d "$target/.git" ]; then
-		echo "✓ $dir already cloned — skipping"
-		continue
-	fi
+  target="$REPOS_DIR/$name"
+  if [[ -d "$target/.git" ]]; then
+    echo "✓ $name already cloned — skipping"
+    continue
+  fi
 
-	echo "→ Cloning $repo into $dir …"
-	git clone --branch "$BRANCH" "git@${GITHUB_HOST}:${ORG}/${repo}.git" "$target"
-	echo "✓ $dir cloned"
-done
+  echo "→ cloning $name ($branch)"
+  git clone --branch "$branch" "$url" "$target"
+done < "$MANIFEST"
 
 echo ""
 echo "Done. Run 'bash scripts/sync-env.sh' to distribute environment variables."

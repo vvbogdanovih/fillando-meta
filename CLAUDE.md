@@ -10,45 +10,61 @@ Fillando складається з двох child-репозиторіїв:
 
 | Repo | Directory | Stack | GitHub |
 |------|-----------|-------|--------|
-| **Backend** | `fillando-be/` | NestJS, MongoDB (Mongoose), JWT, Argon2, S3, Resend, Nova Post API | `vvbogdanovih/fillando-be` |
-| **Frontend** | `fillando-fe/` | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Zustand, React Query, React Hook Form + Zod | `vvbogdanovih/fillando-fe` |
+| **Backend** | `repos/fillando-be/` | NestJS, MongoDB (Mongoose), JWT, Argon2, S3, Resend, Nova Post API | `vvbogdanovih/fillando-be` |
+| **Frontend** | `repos/fillando-fe/` | Next.js 16 (App Router), React 19, TypeScript, Tailwind CSS 4, Zustand, React Query, React Hook Form + Zod | `vvbogdanovih/fillando-fe` |
 
-Child repos клонуються в кореневу директорію і **gitignored** в мета-репо. Кожен має власний remote і CLAUDE.md з деталями.
+Child repos клонуються в директорію `repos/` (керується через `repos.manifest` + `scripts/clone-all.sh`) і **gitignored** в мета-репо. Кожен має власний remote і CLAUDE.md з деталями.
 
 ---
 
 ## Layout
 
 ```
-Fillando/                     ← мета-репо (цей git)
+fillando-meta/                ← мета-репо (цей git)
 ├── CLAUDE.md                 ← ви тут
 ├── README.md                 ← quick start
-├── .gitignore                ← ігнорить fillando-be/, fillando-fe/, .env
+├── CONTRIBUTING.md           ← онбординг + як ми працюємо
+├── .editorconfig             ← спільні правила форматування
+├── .gitignore                ← ігнорить /repos/, .env
+├── repos.manifest            ← канонічний список child repos (url + branch)
 ├── docs/
-│   ├── requirements/         ← FRD та інші вимоги
-│   │   └── FRD.md
-│   ├── architecture/         ← архітектурні рішення
-│   └── runbooks/             ← гайди з налаштування
-│       └── env-template.env  ← master шаблон змінних
+│   ├── README.md             ← індекс документації
+│   ├── requirements/FRD.md   ← єдине джерело правди щодо функціоналу
+│   ├── architecture/         ← overview, domain-model, state-machines
+│   ├── adr/                  ← Architecture Decision Records (0001+)
+│   ├── designs/              ← Technical Designs (TD)
+│   ├── plans/                ← implementation plans
+│   ├── runbooks/             ← deploy-гайди + env-template.env
+│   ├── templates/            ← шаблони FRD / TD / plan / ADR
+│   ├── git-workflow.md       ← branching, commits, PR
+│   ├── environments.md       ← local / production, config & secrets
+│   └── glossary.md           ← доменні терміни
 ├── scripts/
-│   ├── clone-all.sh          ← клонування child repos
+│   ├── clone-all.sh          ← клонування child repos у repos/
+│   ├── pull-all.sh           ← fast-forward усіх child repos
+│   ├── checkout-all.sh       ← перемикання на branch з manifest
+│   ├── status-all.sh         ← branch / sync / dirty статус
 │   ├── sync-env.sh           ← розподіл .env по child repos
 │   └── validate-env.sh       ← перевірка env credentials
-├── fillando-be/              ← [gitignored] backend repo
-└── fillando-fe/              ← [gitignored] frontend repo
+└── repos/                    ← [gitignored] child repos
+    ├── fillando-be/          ← backend repo
+    └── fillando-fe/          ← frontend repo
 ```
 
 ---
 
 ## Documentation Hierarchy
 
-Документація організована за пріоритетом:
+Документація організована за пріоритетом (повний індекс — `docs/README.md`):
 
 1. **`docs/requirements/FRD.md`** — єдине джерело правди щодо реалізованого функціоналу
-2. **`docs/architecture/`** — ADR та архітектурні рішення
-3. **`docs/runbooks/`** — інструкції з налаштування, env template
-4. **`fillando-be/CLAUDE.md`** — backend-специфічні конвенції та команди
-5. **`fillando-fe/CLAUDE.md`** — frontend-специфічні конвенції та команди
+2. **`docs/architecture/`** — system overview, domain model, state machines
+3. **`docs/adr/`** — Architecture Decision Records (прийняті рішення, не переглядаються — супернудяться новими)
+4. **`docs/designs/`** + **`docs/plans/`** — TD перед реалізацією, потім implementation plan
+5. **`docs/runbooks/`** — інструкції з деплою, env template
+6. **`docs/templates/`** — шаблони для нових FRD / TD / plan / ADR
+7. **`repos/fillando-be/CLAUDE.md`** — backend-специфічні конвенції та команди
+8. **`repos/fillando-fe/CLAUDE.md`** — frontend-специфічні конвенції та команди
 
 ---
 
@@ -77,8 +93,8 @@ bash scripts/sync-env.sh
 ```
 
 Скрипт розбирає `.env` по секціях і записує:
-- `fillando-be/.env` ← COMMON + BACKEND
-- `fillando-fe/.env` ← COMMON + FRONTEND
+- `repos/fillando-be/.env` ← COMMON + BACKEND
+- `repos/fillando-fe/.env` ← COMMON + FRONTEND
 
 ### Validate
 
@@ -93,24 +109,25 @@ bash scripts/validate-env.sh
 ## Commands
 
 ```bash
-# Clone child repos (idempotent)
-bash scripts/clone-all.sh
+# --- Manage child repos in repos/ (all read repos.manifest) ---
+bash scripts/clone-all.sh      # clone (idempotent)
+bash scripts/pull-all.sh       # fast-forward all
+bash scripts/checkout-all.sh   # switch all to manifest branch
+bash scripts/status-all.sh     # branch / sync / dirty per repo
 
-# Sync env from root .env to child repos
-bash scripts/sync-env.sh
-
-# Validate env variables
-bash scripts/validate-env.sh
+# --- Env ---
+bash scripts/sync-env.sh       # split root .env → repos/*/.env
+bash scripts/validate-env.sh   # check required vars + smoke tests
 
 # Backend
-cd fillando-be
+cd repos/fillando-be
 yarn start:dev              # dev server (hot reload)
 yarn build                  # build
 yarn lint                   # ESLint
 yarn test                   # unit tests
 
 # Frontend
-cd fillando-fe
+cd repos/fillando-fe
 yarn dev                    # dev server (port 9000)
 yarn build                  # production build
 ```
@@ -176,8 +193,14 @@ Claude Code агент повинен:
 
 | Що | Де |
 |----|----|
+| Індекс усієї документації | `docs/README.md` |
 | Що вже реалізовано | `docs/requirements/FRD.md` |
-| Як налаштувати env | `docs/runbooks/env-template.env` |
-| Backend конвенції | `fillando-be/CLAUDE.md` |
-| Frontend конвенції | `fillando-fe/CLAUDE.md` |
-| API endpoints | `fillando-be/openapi.json` |
+| Прийняті архітектурні рішення | `docs/adr/README.md` |
+| Доменні терміни | `docs/glossary.md` |
+| Git workflow (branching, PR) | `docs/git-workflow.md` |
+| Онбординг | `CONTRIBUTING.md` |
+| Як налаштувати env | `docs/runbooks/env-template.env` + `docs/environments.md` |
+| Шаблони нових документів | `docs/templates/` |
+| Backend конвенції | `repos/fillando-be/CLAUDE.md` |
+| Frontend конвенції | `repos/fillando-fe/CLAUDE.md` |
+| API endpoints | `repos/fillando-be/openapi.json` |

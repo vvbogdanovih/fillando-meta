@@ -1,6 +1,6 @@
-# Child repos — each has its own git remote; do not commit
-fillando-be/
-fillando-fe/
+# Cloned component repositories (managed via repos.manifest + scripts/clone-all.sh)
+# Each keeps its own git remote and history; never committed here.
+/repos/
 
 # Claude Code per-user local settings
 .claude/
