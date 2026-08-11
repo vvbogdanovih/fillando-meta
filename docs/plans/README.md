@@ -12,4 +12,6 @@ Remember: **one PR = one repo** — a plan touching both `fillando-be` and
 
 ## Index
 
-_None yet._
+| Plan | Title | Status |
+|------|-------|--------|
+| [Plan-0001](plan-0001-liqpay.md) | LiqPay online payment | Done |

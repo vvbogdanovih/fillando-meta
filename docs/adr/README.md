@@ -30,5 +30,6 @@ the old as `Superseded by NNNN`.
 | [0004](0004-file-storage.md) | File storage (AWS S3 presigned URLs) | Accepted |
 | [0005](0005-transactional-email.md) | Transactional email (Resend) | Accepted |
 | [0006](0006-delivery-integration.md) | Delivery integration (Nova Post) | Accepted |
-| [0007](0007-payment-flow.md) | Payment flow (IBAN bank transfer) | Accepted |
+| [0007](0007-payment-flow.md) | Payment flow (IBAN bank transfer) | Superseded by 0009 |
 | [0008](0008-frontend-stack.md) | Frontend stack (Next.js 16 / React 19) | Accepted |
+| [0009](0009-online-payment-liqpay.md) | Online payment via LiqPay | Accepted |

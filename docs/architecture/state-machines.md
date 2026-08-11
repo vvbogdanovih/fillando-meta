@@ -67,11 +67,11 @@
 
 | З | В | Коментар |
 |---|---|----------|
-| `PENDING` | `PAID` | Оплата підтверджена (адмін вручну або інтеграція) |
-| `PENDING` | `FAILED` | Оплата не пройшла |
-| `PAID` | `REFUNDED` | Повернення коштів |
+| `PENDING` | `PAID` | Оплата підтверджена (LiqPay callback автоматично, або адмін вручну для IBAN/CASH) |
+| `PENDING` | `FAILED` | Оплата не пройшла (LiqPay callback зі статусом failure/error) |
+| `PAID` | `REFUNDED` | Повернення коштів (вручну) |
 
-**Note:** Оплата наразі підтверджується адміном вручну (IBAN). Автоматичне підтвердження — при реалізації LiqPay/MonoPay.
+**Note:** Для IBAN/CASH оплата підтверджується адміном вручну (`PATCH /orders/:id/payment-status`). Для **LiqPay** підтвердження автоматичне: server-to-server callback `POST /liqpay/callback` переводить `PENDING → PAID` (ідемпотентно, з перевіркою підпису та суми) і надсилає лист. Див. [ADR-0009](../adr/0009-online-payment-liqpay.md).
 
 ---
 

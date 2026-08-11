@@ -1,8 +1,12 @@
 # 0007 — Payment flow (IBAN bank transfer)
 
-- **Status:** Accepted
+- **Status:** Superseded by [0009](0009-online-payment-liqpay.md)
 - **Date:** 2026-07-22
 - **Deciders:** Fillando team
+
+> **Note (2026-07-23):** Online card acquiring via LiqPay was added in
+> [ADR-0009](0009-online-payment-liqpay.md). IBAN/CASH remain supported; this
+> ADR no longer describes the full payment picture.
 
 ## Context
 

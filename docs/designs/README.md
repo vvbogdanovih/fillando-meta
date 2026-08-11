@@ -12,4 +12,6 @@ how a TD differs from a plan.
 
 ## Index
 
-_None yet._
+| TD | Title | Status |
+|----|-------|--------|
+| [TD-0001](TD-0001-liqpay-integration.md) | LiqPay online payment integration | Implemented |

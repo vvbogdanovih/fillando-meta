@@ -50,7 +50,9 @@ relevant. Keep it grouped; add terms as they appear in the
 
 | Term | Definition |
 |------|------------|
-| **IBAN payment** | Payment by bank transfer: the customer receives an order-confirmation email containing the IBAN / payment details. There is no online acquiring in the current scope. |
+| **IBAN payment** | Payment by bank transfer: the customer receives an order-confirmation email containing the IBAN / payment details; confirmed manually by an admin. |
+| **LiqPay** | PrivatBank's online card-acquiring gateway. Checkout redirects to LiqPay's hosted page; a server-to-server callback confirms payment and flips the order to `PAID`. See [ADR-0009](adr/0009-online-payment-liqpay.md). |
+| **Payment Provider (Провайдер оплати)** | Admin-managed online acquiring credentials (`LIQPAY`/`MONOPAY`). The merchant `private_key` is stored encrypted (AES-256-GCM); one credential set per provider can be active at a time. |
 | **Payment Details (Реквізити оплати)** | Admin-managed bank requisites (IBAN etc.) included in confirmation emails. |
 | **Nova Post (Нова Пошта)** | Ukrainian delivery carrier integrated for city/warehouse lookup during checkout; cities and warehouses are synced and searchable. |
 | **Warehouse (Відділення)** | A Nova Post branch/parcel-locker the customer selects as the delivery point. |
