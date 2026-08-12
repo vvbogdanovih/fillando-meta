@@ -183,7 +183,7 @@ Claude Code агент повинен:
 - **Forms:** React Hook Form + Zod
 - **HTTP:** Axios singleton з auto token refresh
 - **Cart:** Dual mode — guest (localStorage) + server (API)
-- **Styling:** Tailwind CSS 4, dark mode only
+- **Styling:** Tailwind CSS 4, single light theme (`:root` tokens only — there is no `.dark` block and `<html>` carries no theme class)
 - **UI:** Custom components (shadcn/ui conventions), Radix UI primitives
 - **i18n:** Українська мова, UAH валюта
 
