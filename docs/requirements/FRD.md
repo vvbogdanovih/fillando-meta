@@ -990,9 +990,20 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `images` | string[] | — |
 | `v_value` | string | default: null |
 | `vendor_product_sku` | string | optional |
+| `prom_id` | string | optional — id товару в Prom, джерело для синку наявності й ціни |
+| `prom_base_price` | number | nullable — остання pre-discount ціна з Prom (аудит) |
+| `prom_discount_ratio` | number | nullable — остання знижка Prom як частка базы (0..1) |
+| `prom_discount_seen_at` | Date | nullable — коли знижку бачили останній раз |
+| `price_updated_at` | Date | nullable — коли `price` останній раз підтверджено |
+| `stock_updated_at` | Date | nullable — коли `stock` останній раз підтверджено |
 | `status` | enum | `draft` / `active` / `archived` |
 
 **Індекси:** `product_id`, `category_id + status`, `slug` (unique), `sku` (unique)
+
+**Ціна з Prom.** `price` рахується як знижена ціна вендора + фіксована tiered-надбавка. Prom не
+віддає об'єкт `discount` для товарів, яких немає в наявності, і повертає голу pre-discount суму —
+тому для таких варіантів застосовується остання зафіксована знижка (`prom_discount_ratio`), а не
+базова ціна: інакше ціна завищується на ~29%. Деталі — `repos/fillando-be/src/docs/PROM_AVAILABILITY_SYNC.md`.
 
 ### 18.7 Carts
 

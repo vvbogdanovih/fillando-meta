@@ -58,7 +58,7 @@
 |------------|---------|------------|
 | `users` | Акаунти покупців та адмінів | email (unique), name, role, authMethod, phone, picture |
 | `products` | Базові товари з атрибутами | name, category_id, vendor_id, description, variant_type, attributes[] |
-| `product_variants` | Конкретні варіанти товару (SKU) | product_id, category_id, slug (unique), sku (unique), price, stock, images[], v_value, status |
+| `product_variants` | Конкретні варіанти товару (SKU) | product_id, category_id, slug (unique), sku (unique), price, stock, images[], v_value, status, prom_id, prom_base_price, prom_discount_ratio, prom_discount_seen_at, price_updated_at, stock_updated_at |
 | `categories` | Категорії (плоскі, один рівень) | name (unique), slug (unique), image, order, required_attributes[] |
 | `vendors` | Виробники / бренди | name (unique), slug (unique) |
 | `carts` | Кошики користувачів | user_id (unique), items[] → { variant_id, quantity, added_at } |
