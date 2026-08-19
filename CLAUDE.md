@@ -138,9 +138,13 @@ yarn build                  # production build
 
 ### Branch Strategy
 
-- **`main`** — стабільна гілка, production-ready
-- Feature branches створюються від `main` в кожному child repo окремо
-- PR в `main` через GitHub
+- **`main`** — production-ready, з неї йде деплой
+- **`dev`** — інтеграційна гілка в child repos; щоденна робота тут
+- Default-гілка на GitHub лишається `main` — базу PR треба перемикати на `dev` вручну
+- Feature branches створюються від `dev` в кожному child repo окремо
+- PR в `dev` через GitHub; `dev → main` мерджиться перед релізом
+- Виняток: `hotfix/*` йде від `main` і мерджиться в `main` **і** `dev`
+- Мета-репо лишається на одній `main` — тут лише доки й тулінг
 
 ### Commit Conventions
 

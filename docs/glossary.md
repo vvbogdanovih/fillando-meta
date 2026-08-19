@@ -32,9 +32,9 @@ relevant. Keep it grouped; add terms as they appear in the
 |------|------------|
 | **Product (Товар)** | A catalog item (e.g. a filament); has categories, a vendor, media, and one or more variants. |
 | **Product Variant** | A purchasable variation of a product (e.g. colour / weight) carrying its own price and stock. |
-| **Category (Категорія)** | Hierarchical grouping of products; drives catalog navigation and breadcrumbs. |
+| **Category (Категорія)** | Flat, single-level grouping of products; drives catalog navigation and breadcrumbs. Carries the `required_attributes` that define which filters the catalog renders. |
 | **Vendor (Виробник)** | The manufacturer/brand of a product, managed in the admin panel. |
-| **Breadcrumbs / SEO** | Category-path breadcrumbs plus SEO metadata rendered on catalog and product pages. |
+| **Breadcrumbs / SEO** | Breadcrumbs (Головна → категорія → [лендінг] → товар) plus SEO metadata rendered on catalog, landing and product pages. |
 
 ## Cart & orders
 
@@ -54,6 +54,7 @@ relevant. Keep it grouped; add terms as they appear in the
 | **LiqPay** | PrivatBank's online card-acquiring gateway. Checkout redirects to LiqPay's hosted page; a server-to-server callback confirms payment and flips the order to `PAID`. See [ADR-0009](adr/0009-online-payment-liqpay.md). |
 | **Payment Provider (Провайдер оплати)** | Admin-managed online acquiring credentials (`LIQPAY`/`MONOPAY`). The merchant `private_key` is stored encrypted (AES-256-GCM); one credential set per provider can be active at a time. |
 | **Payment Details (Реквізити оплати)** | Admin-managed bank requisites (IBAN etc.) included in confirmation emails. |
+| **Voided payment (Скасована оплата)** | `payment_status = VOIDED` — payment is no longer expected because the order was cancelled and no money ever arrived. Set automatically when `order_status` becomes `CANCELLED` while payment is `PENDING`/`FAILED`. Distinct from `REFUNDED`, which means money was received and given back. See [state-machines](architecture/state-machines.md#крос-машинне-правило-скасування-замовлення). |
 | **Nova Post (Нова Пошта)** | Ukrainian delivery carrier integrated for city/warehouse lookup during checkout; cities and warehouses are synced and searchable. |
 | **Warehouse (Відділення)** | A Nova Post branch/parcel-locker the customer selects as the delivery point. |
 

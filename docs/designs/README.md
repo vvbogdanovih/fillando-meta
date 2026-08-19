@@ -15,3 +15,5 @@ how a TD differs from a plan.
 | TD | Title | Status |
 |----|-------|--------|
 | [TD-0001](TD-0001-liqpay-integration.md) | LiqPay online payment integration | Implemented |
+| [TD-0002](TD-0002-catalog-taxonomy-and-landings.md) | Catalog taxonomy, colour standardisation and SEO landings | Draft |
+| [TD-0003](TD-0003-order-cancellation-payment-status.md) | Payment status for cancelled orders (`VOIDED`) | Approved |

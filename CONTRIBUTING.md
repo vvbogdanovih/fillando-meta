@@ -40,7 +40,8 @@ connectivity smoke tests in `validate-env.sh`.
 ## 3. How we work
 
 - **Branching & commits:** follow [`docs/git-workflow.md`](docs/git-workflow.md)
-  (`main` + feature branches per component, Conventional Commits, PR rules).
+  (`dev` as the default integration branch + feature branches per component,
+  `main` for releases, Conventional Commits, PR rules).
 - **Before building a feature:** check the [FRD](docs/requirements/FRD.md); for
   non-trivial work write a Technical Design ([`docs/designs/`](docs/designs/))
   and an implementation plan ([`docs/plans/`](docs/plans/)).

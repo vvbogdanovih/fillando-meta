@@ -8,7 +8,7 @@
 
 | Environment | Purpose | Branch | Notes |
 |-------------|---------|--------|-------|
-| **local** | Developer machines. | `main` / feature | Backend `yarn start:dev` (hot reload); frontend `yarn dev` on port 9000. |
+| **local** | Developer machines. | `dev` / feature | Backend `yarn start:dev` (hot reload); frontend `yarn dev` on port 9000. |
 | **production** | Live system. | `main` | Deployed on LXC behind Nginx Proxy Manager via GitHub Actions CI/CD — see [runbooks](runbooks/). |
 
 > There is no dedicated staging tier today. If one is added, mirror production

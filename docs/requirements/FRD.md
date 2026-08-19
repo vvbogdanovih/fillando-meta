@@ -492,9 +492,11 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `PATCH /orders/{id}/payment-status` | Швидка зміна статусу оплати (+ transaction_id) |
 | `PATCH /orders/{id}/ttn` | Встановлення ТТН Нової Пошти |
 
-**Статуси замовлення:** `NEW` → `CONFIRMED` → `PROCESSING` → `SHIPPED` → `DELIVERED` / `CANCELLED` / `RETURNED`
+**Статуси замовлення:** `NEW` → `CONFIRMED` → `PROCESSING` → `SHIPPED` → `DELIVERED` → `COMPLETED` / `CANCELLED` / `RETURNED`
 
-**Статуси оплати:** `PENDING` → `PAID` / `FAILED` / `REFUNDED`
+**Статуси оплати:** `PENDING` → `PAID` / `FAILED` / `REFUNDED` / `VOIDED`
+
+При скасуванні замовлення неоплачена оплата (`PENDING`/`FAILED`) автоматично переходить у `VOIDED` («Скасовано»); уже оплачене замовлення лишається `PAID`, і адмін вручну ставить `REFUNDED` після реального повернення коштів. Див. [state-machines](../architecture/state-machines.md#крос-машинне-правило-скасування-замовлення), [TD-0003](../designs/TD-0003-order-cancellation-payment-status.md).
 
 **Редагування складу замовлення (`PATCH /orders/{id}`, поле `items`):**
 
@@ -1011,12 +1013,12 @@ Fillando — повноцінний e-commerce додаток для прода�
 | `subtotal_price` | number | required |
 | `applied_discount` | embedded | `{ coupon_id, code, discount_percent, discount_amount }` nullable |
 | `payment_method` | enum | `CASH` / `IBAN` / `LIQPAY` / `MONOPAY` |
-| `payment_status` | enum | `PENDING` / `PAID` / `FAILED` / `REFUNDED` |
+| `payment_status` | enum | `PENDING` / `PAID` / `FAILED` / `REFUNDED` / `VOIDED` |
 | `payment_transaction_id` | string | nullable |
 | `delivery_method` | enum | `NOVA_POST` / `COURIER` / `PICKUP` |
 | `delivery_address` | embedded | `{ city_name, warehouse_description, warehouse_number, street, building, apartment }` nullable |
 | `nova_post_ttn` | string | nullable |
-| `order_status` | enum | `NEW` / `CONFIRMED` / `PROCESSING` / `SHIPPED` / `DELIVERED` / `CANCELLED` / `RETURNED` |
+| `order_status` | enum | `NEW` / `CONFIRMED` / `PROCESSING` / `SHIPPED` / `DELIVERED` / `COMPLETED` / `CANCELLED` / `RETURNED` |
 | `comment` | string | nullable |
 
 **Індекси:** `order_number` (unique), `user_id`, `order_status`, `payment_status`

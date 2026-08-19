@@ -12,5 +12,5 @@
 # Make sure that host alias points at github.com with the right deploy/user key.
 
 # --- Application components ---
-fillando-be   git@github_vvbogdanovih:vvbogdanovih/fillando-be.git   main
-fillando-fe   git@github_vvbogdanovih:vvbogdanovih/fillando-fe.git   main
+fillando-be   git@github_vvbogdanovih:vvbogdanovih/fillando-be.git   dev
+fillando-fe   git@github_vvbogdanovih:vvbogdanovih/fillando-fe.git   dev

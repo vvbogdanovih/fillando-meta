@@ -30,9 +30,8 @@
        │                 │  images, status) │
        │                 └─────────────────┘
        │
-       ├─► Category (ref)
-       │     └─ subcategories[] (embedded)
-       │          └─ required_attributes[] (embedded)
+       ├─► Category (ref, flat)
+       │     └─ required_attributes[] (embedded)
        │
        └─► Vendor (ref)
 
@@ -58,9 +57,9 @@
 | Collection | Purpose | Key Fields |
 |------------|---------|------------|
 | `users` | Акаунти покупців та адмінів | email (unique), name, role, authMethod, phone, picture |
-| `products` | Базові товари з атрибутами | name, category_id, subcategory_id, vendor_id, description, variant_type, attributes[] |
-| `product_variants` | Конкретні варіанти товару (SKU) | product_id, slug (unique), sku (unique), price, stock, images[], v_value, status |
-| `categories` | Категорії з вкладеними підкатегоріями | name, slug, image, order, subcategories[] → required_attributes[] |
+| `products` | Базові товари з атрибутами | name, category_id, vendor_id, description, variant_type, attributes[] |
+| `product_variants` | Конкретні варіанти товару (SKU) | product_id, category_id, slug (unique), sku (unique), price, stock, images[], v_value, status |
+| `categories` | Категорії (плоскі, один рівень) | name (unique), slug (unique), image, order, required_attributes[] |
 | `vendors` | Виробники / бренди | name (unique), slug (unique) |
 | `carts` | Кошики користувачів | user_id (unique), items[] → { variant_id, quantity, added_at } |
 | `orders` | Замовлення | order_number (unique), user_id (nullable), customer, items[], total_price, status, delivery, payment |
@@ -72,6 +71,8 @@
 |------------|---------|------------|
 | `refresh_tokens` | Refresh-токени для JWT rotation | userId, tokenHash, ipAddress, userAgent, expiresAt |
 | `payment_details` | Реквізити для оплати (IBAN) | last_name, first_name, iban (unique), edrpou, bank_name, is_available |
+| `payment_providers` | Провайдери онлайн-оплати (LiqPay / MonoPay) | name, is_active, credentials |
+| `wholesale_inquiries` | Заявки на оптову закупку | name, phone, email, company, message, status |
 | `nova_post_cities` | Міста НП (синхронізовані) | ref (unique), name, settlementType, area |
 | `nova_post_warehouses` | Відділення НП (синхронізовані) | ref (unique), number, cityRef, description, typeOfWarehouse |
 
@@ -81,8 +82,7 @@
 
 | Pattern | Used For | Reason |
 |---------|----------|--------|
-| **Embedded** | Subcategories in Category | Завжди завантажуються разом, невелика кількість |
-| **Embedded** | required_attributes in Subcategory | Частина визначення підкатегорії |
+| **Embedded** | required_attributes in Category | Частина визначення категорії, завжди завантажуються разом |
 | **Embedded** | items in Cart | Один кошик = один документ, атомарні оновлення |
 | **Embedded** | items in Order | Snapshot на момент замовлення, не змінюються |
 | **Embedded** | customer in Order | Snapshot контактів, незалежний від User |
