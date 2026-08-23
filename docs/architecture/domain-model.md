@@ -62,7 +62,7 @@
 | `categories` | Категорії (плоскі, один рівень) | name (unique), slug (unique), image, order, required_attributes[] |
 | `vendors` | Виробники / бренди | name (unique), slug (unique) |
 | `carts` | Кошики користувачів | user_id (unique), items[] → { variant_id, quantity, added_at } |
-| `orders` | Замовлення | order_number (unique), user_id (nullable), customer, items[], total_price, status, delivery, payment |
+| `orders` | Замовлення | order_number (unique), user_id (nullable), customer, items[], total_price, status, delivery, payment (метод оплати обмежений методом доставки: `CASH` — `PICKUP`, `COD` — `NOVA_POST`/`COURIER`) |
 | `discount_coupons` | Знижкові купони | number (unique), code (unique), discount_percent, valid_until, is_active |
 
 ### Support
