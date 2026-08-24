@@ -315,7 +315,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 - Кнопка "Додати в кошик" (неактивна якщо немає в наявності)
 - Опис товару (rich HTML)
 - Таблиця атрибутів
-- Product schema (JSON-LD) для SEO
+- Product schema (JSON-LD) для SEO — `offers` включає `shippingDetails` (Нова Пошта, UA, орієнтовний тариф, 1–3 дні) та `hasMerchantReturnPolicy` (14 днів, зворотна пересилка коштом покупця — умови з `/returns`) для Google Merchant listings
 
 **Поведінка:**
 - Якщо товар вже в кошику — кнопка показує "В кошику" з галочкою
