@@ -5,7 +5,7 @@
 - **Reviewers:** —
 - **Date:** 2026-08-19
 - **Components:** both
-- **Related:** [ADR-0009](../adr/0009-online-payment-liqpay.md), [TD-0001](TD-0001-liqpay-integration.md), [Plan-0003](../plans/plan-0003-payment-status-voided.md), [state-machines](../architecture/state-machines.md), FRD §8, §9, §18.8
+- **Related:** [ADR-0009](../adr/0009-online-payment-liqpay.md), [TD-0001](TD-0001-liqpay-integration.md), [state-machines](../architecture/state-machines.md), FRD §8, §9, §18.8
 
 ## 1. Summary
 
@@ -122,7 +122,7 @@ On `failure`/`error` for a cancelled order nothing is written — `VOIDED` is pr
 - **Performance & scale:** `updateOrderStatus` becomes read-modify-write (one extra `findById` per admin status change) — negligible, no hot path.
 - **Migration / compatibility:** additive. **Frontend must ship first** — its `payment_status` is a zod `z.enum`, so a backend emitting `VOIDED` to an older frontend fails parsing on the order pages. Rollback = stop writing `VOIDED`; already-written rows still render correctly on the shipped frontend.
 - **Observability:** `logger.warn` when a `PAID` order is cancelled (refund needed); `logger.log` when a gateway callback lands on a cancelled order.
-- **Testing strategy:** unit tests for all four branches of the decision function and for `applyGatewayPaymentResult` on a cancelled order (asserting the customer email is not sent); manual end-to-end per [Plan-0003 §6](../plans/plan-0003-payment-status-voided.md).
+- **Testing strategy:** unit tests for all four branches of the decision function and for `applyGatewayPaymentResult` on a cancelled order (asserting the customer email is not sent); manual end-to-end regression across both repos before merge.
 
 ## 8. Open questions
 

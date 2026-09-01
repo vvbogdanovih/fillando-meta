@@ -19,11 +19,7 @@ What we are delivering and the definition of done — in one or two sentences.
 
 ## 2. Scope
 
-**In scope**
-- ...
-
-**Out of scope**
-- ...
+Scope, dependencies and risks: see the linked TD — don't repeat them here.
 
 ## 3. Work breakdown
 
@@ -39,11 +35,6 @@ Remember: **one PR = one repo**.
 
 Order of execution and what can run in parallel. Backend endpoints usually land
 before the frontend that consumes them.
-
-## 5. Dependencies & risks
-
-- **Dependencies:** external services (Nova Post, S3, Resend), decisions still open.
-- **Risks:** what could go wrong, likelihood/impact, and mitigation.
 
 ## 6. Testing & rollout
 

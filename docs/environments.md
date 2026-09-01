@@ -2,7 +2,7 @@
 
 > Status: Draft · Defines the environments each component runs in and how
 > configuration and secrets are handled. For step-by-step deployment, see the
-> [runbooks](runbooks/deployment.md).
+> [runbooks](runbooks/).
 
 ## Environments
 

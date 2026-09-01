@@ -9,7 +9,7 @@ itself — lives here.
 | Area | Folder | What goes here |
 |------|--------|----------------|
 | Requirements | [`requirements/`](requirements/) | The FRD — single source of truth for implemented behaviour. |
-| Architecture | [`architecture/`](architecture/) | The big picture: system overview, domain model, state machines. |
+| Architecture | [`architecture/`](architecture/) | The big picture: domain model, state machines. |
 | Decisions (ADR) | [`adr/`](adr/) | Architecture Decision Records — one file per significant decision and its rationale. |
 | Designs (TD) | [`designs/`](designs/) | Technical Designs — the *what & why* of a feature before it is built. |
 | Plans | [`plans/`](plans/) | Implementation plans — the *how & when* of building a specific piece of work. |
@@ -58,6 +58,9 @@ Small changes may need neither. Larger features get a TD first, then a plan.
 6. **Keep it current.** When reality diverges, update the document or mark it
    `Superseded` and link the replacement. After shipping a feature, update the
    [FRD](requirements/FRD.md).
+7. **Retire finished plans.** Once a plan's feature has shipped and its status
+   is `Done`, delete the plan file — git history is the record. Don't leave
+   completed plans in `docs/plans/`.
 
 ## Index
 
@@ -67,7 +70,6 @@ Keep a running index of substantial documents here as they are created:
 - [Fillando — FRD](requirements/FRD.md) — implemented functionality (source of truth).
 
 ### Architecture
-- [System overview](architecture/overview.md)
 - [Domain model](architecture/domain-model.md)
 - [State machines](architecture/state-machines.md)
 
@@ -75,6 +77,5 @@ Keep a running index of substantial documents here as they are created:
 See the full list with statuses in [`adr/README.md`](adr/README.md).
 
 ### Runbooks
-- [Deployment overview](runbooks/deployment.md)
 - [Backend deploy (LXC)](runbooks/deploy-backend-lxc.md) · [Frontend deploy (LXC)](runbooks/deploy-frontend-lxc.md)
 - [Env template](runbooks/env-template.env)

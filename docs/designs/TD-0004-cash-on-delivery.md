@@ -5,7 +5,7 @@
 - **Reviewers:** —
 - **Date:** 2026-08-23
 - **Components:** both
-- **Related:** [ADR-0006](../adr/0006-delivery-integration.md), [ADR-0009](../adr/0009-online-payment-liqpay.md), [Plan-0004](../plans/plan-0004-cash-on-delivery.md), FRD §7, §9.2, §17.2, §18.8
+- **Related:** [ADR-0006](../adr/0006-delivery-integration.md), [ADR-0009](../adr/0009-online-payment-liqpay.md), FRD §7, §9.2, §17.2, §18.8
 
 ## 1. Summary
 

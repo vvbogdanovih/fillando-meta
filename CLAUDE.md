@@ -30,7 +30,7 @@ fillando-meta/                ← мета-репо (цей git)
 ├── docs/
 │   ├── README.md             ← індекс документації
 │   ├── requirements/FRD.md   ← єдине джерело правди щодо функціоналу
-│   ├── architecture/         ← overview, domain-model, state-machines
+│   ├── architecture/         ← domain-model, state-machines
 │   ├── adr/                  ← Architecture Decision Records (0001+)
 │   ├── designs/              ← Technical Designs (TD)
 │   ├── plans/                ← implementation plans
@@ -58,7 +58,7 @@ fillando-meta/                ← мета-репо (цей git)
 Документація організована за пріоритетом (повний індекс — `docs/README.md`):
 
 1. **`docs/requirements/FRD.md`** — єдине джерело правди щодо реалізованого функціоналу
-2. **`docs/architecture/`** — system overview, domain model, state machines
+2. **`docs/architecture/`** — domain model, state machines
 3. **`docs/adr/`** — Architecture Decision Records (прийняті рішення, не переглядаються — супернудяться новими)
 4. **`docs/designs/`** + **`docs/plans/`** — TD перед реалізацією, потім implementation plan
 5. **`docs/runbooks/`** — інструкції з деплою, env template

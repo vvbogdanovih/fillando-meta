@@ -5,7 +5,7 @@
 - **Reviewers:** —
 - **Date:** 2026-07-23
 - **Components:** both
-- **Related:** [ADR-0009](../adr/0009-online-payment-liqpay.md), [Plan-0001](../plans/plan-0001-liqpay.md), FRD §7, §14, §18
+- **Related:** [ADR-0009](../adr/0009-online-payment-liqpay.md), FRD §7, §14, §18
 
 ## 1. Summary
 
