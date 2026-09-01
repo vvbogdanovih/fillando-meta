@@ -47,7 +47,9 @@ connectivity smoke tests in `validate-env.sh`.
   and an implementation plan ([`docs/plans/`](docs/plans/)).
 - **Document decisions** as ADRs ([`docs/adr/`](docs/adr/)).
 - **After shipping**, update the [FRD](docs/requirements/FRD.md) — it is the
-  source of truth for implemented functionality.
+  source of truth for implemented functionality — and delete the plan file
+  once its status is `Done`; git history is the record, don't leave shipped
+  plans in `docs/plans/`.
 - **One PR = one repo.** Never mix changes across `fillando-be` and
   `fillando-fe` in a single PR.
 
