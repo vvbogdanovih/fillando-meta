@@ -42,27 +42,27 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 ## 2. PR-1 (be) — `feature/rbac-admin-write-endpoints` — задачі 1–7 · реліз того ж дня
 
 ### Код
-- [ ] `src/common/decorators/roles.decorator.ts` — `(...roles: Role[])`, імпорт `Role` з `src/common/types/enums` (задача 4)
-- [ ] `src/common/guards/roles.guard.ts` — `getAllAndOverride<Role[]>`; `!requiredRoles?.length → return false` (default-deny); `const user = req.user as JWTPayload | undefined; if (!user?.role) return false` (задача 5)
-- [ ] Перевірити, що всі наявні `@UseGuards(..., RolesGuard)` мають `@Roles` (orders, users, categories, discount-coupons, payment-details, payment-providers, prom, nova-post, wholesale-inquiries)
-- [ ] `src/modules/product/product.controller.ts` — `VALIDATE`(:104), `CREATE`(:111), `POST VARIANTS`(:130), `PATCH VARIANT`(:137), `DELETE VARIANT`(:148), `PATCH_VARIANT_IMAGES`(:155), `UPDATE`(:166), `DELETE`(:173): `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(Role.ADMIN)`; прибрати коментар :75-77 «unlike the write endpoints below» (задача 1)
-- [ ] `src/modules/vendor/vendor.controller.ts:33-52` — те саме на `CREATE/UPDATE/DELETE`; додати імпорти `Roles`, `RolesGuard`, `Role` (задача 2)
-- [ ] `src/modules/upload/upload.controller.ts:13` — class-level `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(Role.ADMIN)` (задача 3; єдиний FE-споживач `/upload/*` — адмінка товарів)
+- [x] `src/common/decorators/roles.decorator.ts` — `(...roles: Role[])`, імпорт `Role` з `src/common/types/enums` (задача 4)
+- [x] `src/common/guards/roles.guard.ts` — `getAllAndOverride<Role[]>`; `!requiredRoles?.length → return false` (default-deny); `const user = req.user as JWTPayload | undefined; if (!user?.role) return false` (задача 5)
+- [x] Перевірити, що всі наявні `@UseGuards(..., RolesGuard)` мають `@Roles` (orders, users, categories, discount-coupons, payment-details, payment-providers, prom, nova-post, wholesale-inquiries)
+- [x] `src/modules/product/product.controller.ts` — `VALIDATE`(:104), `CREATE`(:111), `POST VARIANTS`(:130), `PATCH VARIANT`(:137), `DELETE VARIANT`(:148), `PATCH_VARIANT_IMAGES`(:155), `UPDATE`(:166), `DELETE`(:173): `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(Role.ADMIN)`; прибрати коментар :75-77 «unlike the write endpoints below» (задача 1)
+- [x] `src/modules/vendor/vendor.controller.ts:33-52` — те саме на `CREATE/UPDATE/DELETE`; додати імпорти `Roles`, `RolesGuard`, `Role` (задача 2)
+- [x] `src/modules/upload/upload.controller.ts:13` — class-level `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(Role.ADMIN)` (задача 3; єдиний FE-споживач `/upload/*` — адмінка товарів)
 
 ### Тести (задача 6)
-- [ ] `src/common/testing/rbac-harness.ts` — `createRbacApp(controller, providersMock)`: `Test.createTestingModule`, `overrideGuard(JwtAuthGuard)` фейком, що читає заголовок `x-test-role` → `req.user = { id, email, name, role }` або `undefined`; повертає `INestApplication` для `supertest`. `RolesGuard` справжній
-- [ ] `src/modules/product/product.controller.rbac.spec.ts` — `it.each` по кожному write-ендпоінту: без користувача → 403, `USER` → 403, `ADMIN` → 200/201; публічні `GET /products/catalog`, `/by-slug/x`, `/price-sheet` без ролі → 200
-- [ ] `src/modules/vendor/vendor.controller.rbac.spec.ts` — аналогічно для 3 write-ендпоінтів; `GET /vendors` публічний → 200
-- [ ] `src/modules/upload/upload.controller.rbac.spec.ts` — 3 ендпоінти: USER → 403, ADMIN → 200/201
-- [ ] `src/common/guards/roles.guard.spec.ts` — без метаданих → false; `user` undefined → false; `USER` vs `[ADMIN]` → false; `ADMIN` → true
-- [ ] `yarn test` зелений; `yarn lint` — не більше 258 errors базлайну
+- [x] `src/common/testing/rbac-harness.ts` — `createRbacApp({ controllers, providers })`: `Test.createTestingModule`, `overrideGuard(JwtAuthGuard)` фейком (`HeaderRoleAuthGuard`), що читає заголовок `x-test-role` → `req.user = { id, email, name, role }`, а без заголовка кидає 401; хелпер `send(app, method, path, { role, body })`; повертає `INestApplication` для `supertest`. `RolesGuard` справжній
+- [x] `src/modules/product/product.controller.rbac.spec.ts` — `it.each` по кожному write-ендпоінту: без заголовка → 401, `USER` → 403, `ADMIN` → 200/201 (+ сервіс викликано рівно раз); публічні `GET /products/catalog`, `/by-slug/x`, `/price-sheet` без ролі → 200
+- [x] `src/modules/vendor/vendor.controller.rbac.spec.ts` — аналогічно для 3 write-ендпоінтів; `GET /vendors` публічний → 200
+- [x] `src/modules/upload/upload.controller.rbac.spec.ts` — 3 ендпоінти: USER → 403, ADMIN → 200/201
+- [x] `src/common/guards/roles.guard.spec.ts` — без метаданих → false; `user` undefined → false; `USER` vs `[ADMIN]` → false; `ADMIN` → true
+- [x] `yarn test` зелений; `yarn lint` — не більше 258 errors базлайну
 
 ### Доки (задача 7)
-- [ ] `src/docs/RBAC.md` — «Current State» → застосовано до Product/Vendor/Upload; таблицю «Enforced» доповнити (products write, vendors write, upload, users, discount-coupons, payment-providers, wholesale, nova-post sync); секцію «Planned» видалити; правило default-deny
-- [ ] `src/docs/todo/AUDIT_CRITICAL.md` #3 → Fixed (обрано role-check, не ownership); `src/docs/TODO.md` — статус #3; `src/docs/todo/README.md` — прибрати з «Негайно»
-- [ ] `src/docs/API_AND_SWAGGER.md` §4 — прибрати «RolesGuard not yet applied to any endpoint»
-- [ ] `yarn spec:export`
-- [ ] PR → `dev`, після мержу — деплой; ручна перевірка: USER-cookie `PATCH /products/:id` → 403; адмінка створює товар → 201
+- [x] `src/docs/RBAC.md` — «Current State» → застосовано до Product/Vendor/Upload; таблицю «Enforced» доповнити (products write, vendors write, upload, users, discount-coupons, payment-providers, wholesale, nova-post sync); секцію «Planned» видалити; правило default-deny
+- [x] `src/docs/todo/AUDIT_CRITICAL.md` #3 → Fixed (обрано role-check, не ownership); `src/docs/TODO.md` — статус #3; `src/docs/todo/README.md` — прибрати з «Негайно»
+- [x] `src/docs/API_AND_SWAGGER.md` §4 — прибрати «RolesGuard not yet applied to any endpoint»
+- [x] `yarn spec:export`
+- [ ] PR → `dev` — гілка `feature/rbac-admin-write-endpoints` запушена (коміт afd59c1), PR відкрити: https://github.com/vvbogdanovih/fillando-be/pull/new/feature/rbac-admin-write-endpoints (база → `dev`); після мержу — деплой; ручна перевірка: USER-cookie `PATCH /products/:id` → 403; адмінка створює товар → 201
 - [ ] plan-0003 §3: задачі 1–7 → ☑
 
 ---
@@ -118,7 +118,7 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 ### Доки / env
 - [ ] `src/docs/API_AND_SWAGGER.md` — розділ «Rate limiting» (таблиця лімітів, як додати новий, `X-Internal-Token`)
 - [ ] `src/docs/todo/AUDIT_HIGH.md` #6, #9, #12 → Fixed з фактичними числами
-- [ ] Мета-репо `docs/runbooks/env-template.env` — `INTERNAL_API_TOKEN` у COMMON-секції (окремий docs-коміт)
+- [x] Мета-репо `docs/runbooks/env-template.env` — `INTERNAL_API_TOKEN` у COMMON-секції (окремий docs-коміт)
 - [ ] `.env.prod` BE на сервері — `INTERNAL_API_TOKEN` (optional; можна пізніше)
 - [ ] Переконатись, що задача 16 (PR-5 або міні-PR `fix/server-fetch-throws`) **уже в проді** — і лише тоді деплоїти PR-3
 - [ ] Після деплою: 11-й `POST /auth/login` → 429 з `Retry-After`; у логах BE немає 429 для SSR
@@ -129,26 +129,26 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 ## 5. PR-4 (be) — `feature/order-payment-lookup` — задачі 17–18 · паралельно з PR-2/3
 
 ### Код
-- [ ] `src/common/services/crypto.util.ts` — `orderAccessToken(orderNumber)` = `createHmac('sha256', ENV.PAYMENT_ENCRYPTION_KEY).update(`order-lookup:${orderNumber}`).digest('hex').slice(0, 32)`; `verifyOrderAccessToken(orderNumber, token)` через `timingSafeEqual` з перевіркою довжини
-- [ ] `src/common/constants/endpoints.constant.ts` ORDERS — `LOOKUP: '/lookup/:orderNumber'`
-- [ ] `src/modules/order/dto/order-lookup-query.dto.ts` — `token: @Matches(/^[a-f0-9]{32}$/)`; param `orderNumber` — `@Matches(/^FO-\d{7}$/)`
-- [ ] `src/modules/order/dto/order-payment-status-response.dto.ts` — Swagger-shape `{ order_number, payment_method, payment_status, total_price }`
-- [ ] `order.service.ts` — `getPaymentStatusPublic(orderNumber, token)`: невірний токен → **404** (не 403); `findByNumber`; повернути рівно 4 поля
-- [ ] `order.service.ts` `create(...)` — до відповіді додати `payment_access_token: orderAccessToken(order_number)` **лише** для `payment_method === LIQPAY`
-- [ ] `order.controller.ts` — `@Get(ENDPOINTS.ORDERS.LOOKUP)` публічний, оголошений **перед** `GET_BY_ID`; `API_OPERATION.ORDERS.LOOKUP` у `api-operation.constant.ts` (~:257)
-- [ ] `liqpay.service.ts:53` — `result_url` += `&token=${orderAccessToken(order.order_number)}`
-- [ ] `liqpay.service.ts` `buildCheckout` — ride-along: `payment_status === PAID → BadRequestException('Order is already paid')`
+- [x] `src/common/services/crypto.util.ts` — `orderAccessToken(orderNumber)` = `createHmac('sha256', ENV.PAYMENT_ENCRYPTION_KEY).update(`order-lookup:${orderNumber}`).digest('hex').slice(0, 32)`; `verifyOrderAccessToken(orderNumber, token)` через `timingSafeEqual` з перевіркою довжини
+- [x] `src/common/constants/endpoints.constant.ts` ORDERS — `LOOKUP: '/lookup/:orderNumber'`
+- [x] `src/modules/order/dto/order-lookup-query.dto.ts` — `token: @Matches(/^[a-f0-9]{32}$/)`; param `orderNumber` — `@Matches(/^FO-\d{7}$/)`
+- [x] `src/modules/order/dto/order-payment-status-response.dto.ts` — Swagger-shape `{ order_number, payment_method, payment_status, total_price }`
+- [x] `order.service.ts` — `getPaymentStatusPublic(orderNumber, token)`: невірний токен → **404** (не 403); `findByNumber`; повернути рівно 4 поля
+- [x] `order.service.ts` `create(...)` — до відповіді додати `payment_access_token: orderAccessToken(order_number)` **лише** для `payment_method === LIQPAY`
+- [x] `order.controller.ts` — `@Get(ENDPOINTS.ORDERS.LOOKUP)` публічний, оголошений **перед** `GET_BY_ID`; `API_OPERATION.ORDERS.LOOKUP` у `api-operation.constant.ts` (~:257)
+- [x] `liqpay.service.ts:53` — `result_url` += `&token=${orderAccessToken(order.order_number)}`
+- [x] `liqpay.service.ts` `buildCheckout` — ride-along: `payment_status === PAID → BadRequestException('Order is already paid')`; за ревʼю також `CANCELLED`/`VOIDED`/`REFUNDED → 400 'Order is cancelled'`; `app.module.ts` — pino `redact` для `req.query.token` + `[redacted]` в url; `CreateOrderResponseDto` з `payment_access_token` для Swagger
 
 ### Тести
-- [ ] `src/common/services/crypto.util.spec.ts` — детермінованість; різні номери → різні токени; `verify` false на підміну / іншу довжину
-- [ ] `order.service.spec.ts` — `describe('getPaymentStatusPublic')`: невірний токен → `NotFoundException`, `findByOrderNumber` не викликано; вірний → рівно 4 ключі
-- [ ] `src/modules/liqpay/liqpay.service.spec.ts` (новий, стиль `order.service.spec.ts`) — `result_url` містить `token=`; PAID → BadRequest
-- [ ] `yarn test` зелений
+- [x] `src/common/services/crypto.util.spec.ts` — детермінованість; різні номери → різні токени; `verify` false на підміну / іншу довжину
+- [x] `order.service.spec.ts` — `describe('getPaymentStatusPublic')`: невірний токен → `NotFoundException`, `findByOrderNumber` не викликано; вірний → рівно 4 ключі
+- [x] `src/modules/liqpay/liqpay.service.spec.ts` (новий, стиль `order.service.spec.ts`) — `result_url` містить `token=`; PAID → BadRequest
+- [x] `yarn test` зелений
 
 ### Доки (задача 18)
-- [ ] Новий `src/docs/LIQPAY_FLOW.md` — checkout → redirect → callback → `applyGatewayPaymentResult`; чому `result_url` не є джерелом правди; lookup + HMAC-токен; посилання на TD-0001 і `state-machines.md`
-- [ ] `API_AND_SWAGGER.md` §5 і `ORDER_ADMIN_API.md:83` — згадати LIQPAY_FLOW
-- [ ] `yarn spec:export`
+- [x] Новий `src/docs/LIQPAY_FLOW.md` — checkout → redirect → callback → `applyGatewayPaymentResult`; чому `result_url` не є джерелом правди; lookup + HMAC-токен; посилання на TD-0001 і `state-machines.md`
+- [x] `API_AND_SWAGGER.md` §5 і `ORDER_ADMIN_API.md:83` — згадати LIQPAY_FLOW
+- [x] `yarn spec:export`
 - [ ] PR → `dev`; після деплою: `GET /orders/lookup/FO-0000001?token=bad` → 404, з правильним → 4 поля
 - [ ] plan-0003 §3: задачі 17–18 → ☑
 
@@ -195,8 +195,8 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 
 ## 7. PR-6 (fe) — `chore/compose-google-ads-build-args` — задача 23 · незалежний
 
-- [ ] `docker-compose.prod.yml:6-12` — `NEXT_PUBLIC_GOOGLE_ADS_ID: AW-18332229942`, `NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_CONVERSION: AW-18332229942/vho6CLCit9McELbCvqVE` (ARG-и в `Dockerfile.prod:12-13,19-20` уже є)
-- [ ] `.dockerignore` — `.env*`, `node_modules`, `.next` (окремим комітом; сьогодні `COPY . .` тягне локальний `.env`)
+- [x] `docker-compose.prod.yml:6-12` — `NEXT_PUBLIC_GOOGLE_ADS_ID: AW-18332229942`, `NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_CONVERSION: AW-18332229942/vho6CLCit9McELbCvqVE` (ARG-и в `Dockerfile.prod:12-13,19-20` уже є)
+- [x] `.dockerignore` — `.env*`, `node_modules`, `.next` (окремим комітом; сьогодні `COPY . .` тягне локальний `.env`)
 - [ ] PR → `dev`
 - [ ] plan-0003 §3: задача 23 → ☑
 
