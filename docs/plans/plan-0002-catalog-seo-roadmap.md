@@ -6,7 +6,9 @@
 - **Components:** both (fillando-be, fillando-fe)
 - **Related:** [FRD §4.1, §4.3, §11, §18.3](../requirements/FRD.md),
   [TD-0002](../designs/TD-0002-catalog-taxonomy-and-landings.md),
-  [ADR-0008](../adr/0008-frontend-stack.md)
+  [ADR-0008](../adr/0008-frontend-stack.md),
+  [TD-0005](../designs/TD-0005-catalog-category-isolation.md),
+  [TD-0006](../designs/TD-0006-google-merchant-feed-and-structured-data.md)
 
 > Це програмний роадмап на кілька фаз, а не звичайний implementation plan під один
 > TD. Кожна фаза отримує власний TD перед реалізацією; TD-0002 покриває фазу 1.
@@ -77,6 +79,16 @@ Category не має полів `description` / `seo_title` / `meta_description`
 | Фасети не звужуються, без лічильників | `filterOptionsPipeline` ігнорує активні фільтри | «0 товарів» після кліку |
 | `filter_type: 'range'` оголошений, не реалізований | `AttributeFilter.tsx` повертає `null` | діаметр/вага не фільтруються |
 | Ренейм товару перегенеровує slug варіантів без 301 | `product.service.ts` | тиха втрата проіндексованих URL |
+
+### 1.6 Немає виходу в Google Merchant Center (виявлено 01.09.2026)
+
+Попри вже додану Product JSON-LD (offers, shippingDetails,
+hasMerchantReturnPolicy — націлено на Google Merchant listings), жодного
+продуктового фіда не існує, а наявна розмітка має помилки (`brand`
+захардкожений на "Fillando" замість реального вендора, `availability`
+ігнорує статус товару). Без фіда безкоштовні лістинги залежать від
+нестабільного автоматичного краулінгу, а платні Shopping/Performance Max
+кампанії взагалі неможливі.
 
 ---
 
@@ -162,6 +174,28 @@ Category не має полів `description` / `seo_title` / `meta_description`
 
 **Оцінка:** окремий TD на кожен пункт.
 
+### Фаза 5 — Google Merchant Center (фід + збагачені structured data)
+
+Спроєктовано в
+[TD-0006](../designs/TD-0006-google-merchant-feed-and-structured-data.md):
+
+1. Новий бекенд-модуль `feed`: публічний Google Shopping XML-фід
+   (`GET /feeds/google-shopping.xml`), з status=active варіантів, з
+   custom labels для сегментації Shopping/PMax кампаній.
+2. Нові поля: `ProductVariant.weight_g`, `Category.google_product_category`
+   — per-variant/per-category, без глобальних припущень (TD-0005).
+3. Виправлення й збагачення Product JSON-LD (fe): реальний `brand` замість
+   захардкодженого "Fillando", коректний `availability` (враховує
+   `status`), `sku`, `productGroupID`, обчислювана доставка за вагою
+   замість фіксованих ₴97.
+4. GA4-трекінг (`view_item`/`add_to_cart`/`begin_checkout`/`purchase`) на
+   додачу до наявного Google Ads conversion pixel — під Performance Max.
+
+**Оцінка:** 2 PR (be: модуль фіда + поля; fe: JSON-LD + tracking),
+~1–1.5 тижні. М'яка залежність від Фази 1 (кольори/полімери збагачують
+`color`/`material` у фіді й JSON-LD, але не блокують запуск — фід і
+виправлення JSON-LD працюють на поточній схемі).
+
 ---
 
 ## 4. Прибирання боргу
@@ -187,11 +221,16 @@ graph LR
     F0[Фаза 0<br/>SEO-гігієна] --> F2[Фаза 2<br/>Фасети + UX]
     F1[Фаза 1 — TD-0002<br/>Таксономія, кольори, лендінги] --> F2
     F1 --> F3[Фаза 3<br/>Контент]
+    F1 -.->|"м'яка залежність"| F5[Фаза 5 — TD-0006<br/>Google Merchant Center]
+    F0 --> F5
     F2 --> F4[Фаза 4<br/>Бренди, аксесуари, відгуки]
     F3 --> F4
 ```
 
 Фази 0 і 1 стартують паралельно. Фаза 3 може йти паралельно з фазою 2.
+Фаза 5 не блокує і не блокується фазами 2–4 — може стартувати одразу після
+Фази 0, з м'якою залежністю від Фази 1 (кольори/полімери збагачують фід,
+але не є передумовою запуску).
 
 **Пам'ятати:** один PR = один репо. План, що зачіпає обидва компоненти, все одно
 розпадається на окремі PR.

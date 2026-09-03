@@ -17,4 +17,6 @@ so this table only lists plans that are still active.
 
 | Plan | Title | Status |
 |------|-------|--------|
-| [Plan-0002](plan-0002-catalog-seo-roadmap.md) | Catalog SEO & UX roadmap (5 phases) | Approved |
+| [Plan-0002](plan-0002-catalog-seo-roadmap.md) | Catalog SEO & UX roadmap (6 phases) | Approved |
+| [Plan-0003](plan-0003-security-hardening.md) | Вразливості та воронка замовлення | Approved |
+| [Plan-0004](plan-0004-catalog-phase-1.md) | Каталог: таксономія, кольори, лендінги (Фази 0+1) | Approved |
