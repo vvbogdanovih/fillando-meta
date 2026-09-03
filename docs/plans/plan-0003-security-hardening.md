@@ -58,7 +58,7 @@ Definition of done:
 
 | # | Task | Component | Depends on | Status |
 |---|------|-----------|------------|--------|
-| 8 | Прибрати `prom_id` і `vendor_product_sku` з **усіх трьох** публічних поверхонь: `findVariantWithProduct` (`GET /products/by-slug/:slug`), `GET /products/:id/variants`, `GET /products/:id/variants/:variantId`. Реалізувати allowlist-проєкцією, не фільтрацією в мапері | fillando-be | — | ☐ |
+| 8 | Прибрати `prom_id` і `vendor_product_sku` з публічних поверхонь: `findVariantWithProduct` (`GET /products/by-slug/:slug`) — allowlist-проєкцією (`toPublicVariant`), не фільтрацією в мапері; `GET /products/:id/variants` і `GET /products/:id/variants/:variantId` — **закрити під ADMIN** (їх використовує лише адмінка, якій ці поля потрібні для редагування) | fillando-be | — | ☐ |
 | 9 | `findPriceSheet` — `{ $match: { status: ACTIVE } }` першою стадією; заразом прибрати з її `$project` поля `prom_id` і `vendor_product_sku` (сьогодні від витоку рятує лише мапер у сервісі — крихко) | fillando-be | — | ☐ |
 | 10 | `findAllSlugs` — фільтр `status: ACTIVE` (джерело `sitemap.xml`). **Єдиний власник цієї задачі — цей PR**; TD-0006 §9 крок 2 її не робить | fillando-be | — | ☐ |
 | 11 | `GET /products` — **закрити під ADMIN** (`JwtAuthGuard, RolesGuard`). Рішення, не альтернатива: ендпоінт віддає всі продукти без пагінації й без фільтра статусу, а публічна вітрина його не використовує (каталог іде через `/products/catalog`) | fillando-be | 1 | ☐ |

@@ -70,25 +70,27 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 ## 3. PR-2 (be) — `feature/public-projection-hardening` — задачі 8–12 · після PR-1
 
 ### Код
-- [ ] `src/modules/product/product-public.mappers.ts` — `toPublicVariant(variant)` з allowlist `id, name, slug, sku, price, price_updated_at, stock, images, v_value, status`; експорт `PUBLIC_VARIANT_FIELDS` (задача 8)
-- [ ] `src/database/mongoose/repositories/product-variant.repository.ts` `findVariantWithProduct` (:89-103) — використати `toPublicVariant`; у `findOne({ slug })` (:56) додати `status: ProductStatus.ACTIVE` (draft → 404 на FE через `notFound()`)
-- [ ] `product.controller.ts:118-128` — `GET /products/:id/variants` і `/:variantId` → `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(Role.ADMIN)` (рішення 1)
-- [ ] `product.service.ts:267-274` `getVariant` — `Types.ObjectId.isValid` → `NotFoundException` замість `BSONError` 500
-- [ ] `findPriceSheet` (:218-297) — першою стадією `{ $match: { status: ProductStatus.ACTIVE } }`; з `$project` (:269-284) прибрати `vendor_product_sku`, `prom_id`; з regex-`$match` (:242) прибрати `{ vendor_product_sku: rx }`; винести `$project` у константу `PRICE_SHEET_PUBLIC_PROJECTION` (задача 9)
-- [ ] `product.service.ts` `PriceSheetRaw` (:22-36) — прибрати `vendor_product_sku`, `prom_id`
-- [ ] `findAllSlugs` (:44-49) — `.find({ status: ProductStatus.ACTIVE }, …)` (задача 10)
-- [ ] `product.controller.ts:39-43` `GET /products` → `JwtAuthGuard, RolesGuard` + `ADMIN`; `api-operation.constant.ts:107-110` — «Admin-only, unpaginated list» (задача 11; FE-споживач лише `admin/products/Products.tsx:36`)
+- [x] `src/modules/product/product-public.mappers.ts` — `toPublicVariant(variant)` з allowlist `id, name, slug, sku, price, price_updated_at, stock, images, v_value, status`; експорт `PUBLIC_VARIANT_FIELDS` (задача 8)
+- [x] `src/database/mongoose/repositories/product-variant.repository.ts` `findVariantWithProduct` (:89-103) — використати `toPublicVariant`; у `findOne({ slug })` (:56) додати `status: ProductStatus.ACTIVE` (draft → 404 на FE через `notFound()`)
+- [x] `product.controller.ts:118-128` — `GET /products/:id/variants` і `/:variantId` → `@UseGuards(JwtAuthGuard, RolesGuard)` + `@Roles(Role.ADMIN)` (рішення 1)
+- [x] `product.service.ts:267-274` `getVariant` — `Types.ObjectId.isValid` → `NotFoundException` замість `BSONError` 500
+- [x] `findPriceSheet` (:218-297) — першою стадією `{ $match: { status: ProductStatus.ACTIVE } }`; з `$project` (:269-284) прибрати `vendor_product_sku`, `prom_id`; з regex-`$match` (:242) прибрати `{ vendor_product_sku: rx }`; винести `$project` у константу `PRICE_SHEET_PUBLIC_PROJECTION` (задача 9)
+- [x] `product.service.ts` `PriceSheetRaw` (:22-36) — прибрати `vendor_product_sku`, `prom_id`
+- [x] `findAllSlugs` (:44-49) — `.find({ status: ProductStatus.ACTIVE }, …)` (задача 10)
+- [x] `product.controller.ts:39-43` `GET /products` → `JwtAuthGuard, RolesGuard` + `ADMIN`; `api-operation.constant.ts:107-110` — «Admin-only, unpaginated list» (задача 11; FE-споживач лише `admin/products/Products.tsx:36`)
 
 ### Тести (задача 12)
-- [ ] `src/modules/product/product-public.mappers.spec.ts` — `toPublicVariant` над фікстурою з усіма полями схеми → `Object.keys(result).sort()` дорівнює allowlist; `not.toHaveProperty('prom_id' | 'vendor_product_sku' | 'prom_base_price' | 'prom_discount_ratio' | 'prom_discount_seen_at')`
-- [ ] `PRICE_SHEET_PUBLIC_PROJECTION` — `toMatchInlineSnapshot` ключів
-- [ ] `product.controller.rbac.spec.ts` — додати `GET /products`, `GET /products/:id/variants`, `GET /products/:id/variants/:variantId`
+- [x] `src/modules/product/product-public.mappers.spec.ts` — `toPublicVariant` над фікстурою з усіма полями схеми → `Object.keys(result).sort()` дорівнює allowlist; `not.toHaveProperty('prom_id' | 'vendor_product_sku' | 'prom_base_price' | 'prom_discount_ratio' | 'prom_discount_seen_at')`
+- [x] `PRICE_SHEET_PUBLIC_PROJECTION` — `toMatchInlineSnapshot` ключів
+- [x] `product.controller.rbac.spec.ts` — додати `GET /products`, `GET /products/:id/variants`, `GET /products/:id/variants/:variantId`
+- [x] `product-variant.repository.int-spec.ts` — інтеграційний тест на реальній Mongo (`yarn test:integration`): only-active у slugs/count/price-sheet/by-slug, жодного prom-поля в payload, vendor SKU не шукається, admin `findByProductId` повний
+- [ ] Ride-along з ревʼю PR-2 (винесено в **PR-4b** `feature/order-customer-projection` від PR-4): `POST /orders` і `GET /orders/me*` віддають `items[].vendor_sku` → прибрати з customer-facing відповідей; DRAFT/ARCHIVED варіанти не можна замовити/додати в кошик
 - [ ] `yarn test` зелений
 
 ### Доки
-- [ ] `src/docs/PRICE_SHEET.md` — фільтр `active`, прибрані поля; `src/docs/DATA_MODELS.md:229` — «internal, never exposed publicly»; `src/docs/API_AND_SWAGGER.md` §5 — `GET /products` admin
-- [ ] `yarn spec:export`
-- [ ] PR → `dev`; ручна перевірка після деплою: `by-slug` без prom-полів, draft-slug → 404, `variants/slugs` без draft, `price-sheet?q=<vendor sku>` → порожньо
+- [x] `src/docs/PRICE_SHEET.md` — фільтр `active`, прибрані поля; `src/docs/DATA_MODELS.md:229` — «internal, never exposed publicly»; `src/docs/API_AND_SWAGGER.md` §5 — `GET /products` admin
+- [x] `yarn spec:export`
+- [ ] PR → `dev` — гілка `feature/public-projection-hardening` запушена (коміт 0f46afd, stacked на PR-1), PR відкрити: https://github.com/vvbogdanovih/fillando-be/pull/new/feature/public-projection-hardening (база → `feature/rbac-admin-write-endpoints` або `dev` після мержу PR-1); ручна перевірка після деплою: `by-slug` без prom-полів, draft-slug → 404, `variants/slugs` без draft, `price-sheet?q=<vendor sku>` → порожньо
 - [ ] plan-0003 §3: задачі 8–12 → ☑
 
 ---

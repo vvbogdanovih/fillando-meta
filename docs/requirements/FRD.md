@@ -299,10 +299,15 @@ Fillando — повноцінний e-commerce додаток для прода�
 **Відповідь:**
 ```json
 {
-  "variant": { "_id", "product_id", "name", "slug", "sku", "price", "stock", "images", "v_value", "status" },
-  "product": { "_id", "name", "category_id", "vendor_id", "description", "variant_type", "attributes" }
+  "variant": { "id", "name", "slug", "sku", "price", "price_updated_at", "stock", "images", "v_value", "status" },
+  "product": { "id", "name", "description", "variant_type", "attributes" },
+  "siblings": [ { /* той самий публічний allowlist, лише active */ } ],
+  "category_slug": "…",
+  "category_name": "…"
 }
 ```
+
+Публічна проєкція варіанта (`PUBLIC_VARIANT_FIELDS`, `fillando-be/src/modules/product/product-public.mappers.ts`) — фіксований allowlist: `vendor_product_sku`, `prom_id`, `prom_*` ніколи не віддаються. Віддаються лише варіанти зі `status = active`; draft/archived → 404.
 
 **UI-елементи:**
 - Галерея зображень з мініатюрами та навігацією
@@ -588,13 +593,13 @@ Fillando — повноцінний e-commerce додаток для прода�
 | | |
 |---|---|
 | **Маршрут FE** | `/admin/products` |
-| **Доступ** | Role.ADMIN (для створення/редагування), Публічний (для перегляду) |
+| **Доступ** | Role.ADMIN — CRUD, `GET /products`, `GET /products/{id}/variants`, `GET /products/{id}/variants/{variantId}` (повні документи з `vendor_product_sku`/`prom_id`); публічні — `/products/catalog`, `/products/search`, `/products/by-slug/{slug}`, `/products/price-sheet`, `/products/{id}` |
 
 ### 10.1 Список товарів
 
 | Endpoint | Опис |
 |----------|------|
-| `GET /products` | Всі товари |
+| `GET /products` | Всі товари без пагінації — **Role.ADMIN** (адмін-список); вітрина використовує `GET /products/catalog` |
 
 ### 10.2 Створення товару
 
@@ -655,8 +660,8 @@ Fillando — повноцінний e-commerce додаток для прода�
 
 | Endpoint | Опис |
 |----------|------|
-| `GET /products/variants/slugs` | Всі слаги варіантів (для sitemap) |
-| `GET /products/variants/count` | Загальна кількість варіантів |
+| `GET /products/variants/slugs` | Слаги **активних** варіантів (для sitemap; draft/archived не потрапляють) |
+| `GET /products/variants/count` | Кількість **активних** варіантів (cache-key sitemap, той самий набір) |
 
 ### 10.5 Генерація прайс-листа
 
