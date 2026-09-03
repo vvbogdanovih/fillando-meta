@@ -84,7 +84,7 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 - [x] `PRICE_SHEET_PUBLIC_PROJECTION` — `toMatchInlineSnapshot` ключів
 - [x] `product.controller.rbac.spec.ts` — додати `GET /products`, `GET /products/:id/variants`, `GET /products/:id/variants/:variantId`
 - [x] `product-variant.repository.int-spec.ts` — інтеграційний тест на реальній Mongo (`yarn test:integration`): only-active у slugs/count/price-sheet/by-slug, жодного prom-поля в payload, vendor SKU не шукається, admin `findByProductId` повний
-- [ ] Ride-along з ревʼю PR-2 (винесено в **PR-4b** `feature/order-customer-projection` від PR-4): `POST /orders` і `GET /orders/me*` віддають `items[].vendor_sku` → прибрати з customer-facing відповідей; DRAFT/ARCHIVED варіанти не можна замовити/додати в кошик
+- [x] Ride-along з ревʼю PR-2 (винесено в **PR-4b** `feature/order-customer-projection` від PR-4, коміт ce27979, запушено; PR: https://github.com/vvbogdanovih/fillando-be/pull/new/feature/order-customer-projection, база → `feature/order-payment-lookup`): `POST /orders` і `GET /orders/me*` без `items[].vendor_sku`; DRAFT/ARCHIVED варіанти → 400 у замовленні, 409/removed_items у кошику; тести order/cart
 - [ ] `yarn test` зелений
 
 ### Доки
@@ -98,32 +98,33 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 ## 4. PR-3 (be) — `feature/rate-limiting` — задачі 13–15 · після PR-2; FE-задача 16 у проді **раніше або разом**
 
 ### Код
-- [ ] `yarn add @nestjs/throttler` (v6 для Nest 11; `ttl` у мс) (задача 13)
-- [ ] `src/common/constants/env.constant.ts` — `INTERNAL_API_TOKEN: z.string().min(32).optional()` у 3 місцях (schema / safeParse-літерал / `ENV`) (задача 14)
-- [ ] `src/common/guards/internal-request.util.ts` — `isInternalRequest(ctx)`: `ENV.INTERNAL_API_TOKEN` заданий **і** `timingSafeEqual` із заголовком `x-internal-token` (перевірка довжини перед порівнянням)
-- [ ] `src/app.module.ts` — `ThrottlerModule.forRoot({ throttlers: [{ name: 'default', ttl: 60_000, limit: 20 }], skipIf: isInternalRequest })`; **без** `APP_GUARD`
-- [ ] Ліміти (задача 15) — `@UseGuards(ThrottlerGuard)` + `@Throttle({ default: { limit, ttl: 60_000 } })`:
-  - [ ] `auth.controller.ts:70,88` `POST /auth/login`, `POST /auth/register` — 10/хв
-  - [ ] `auth.controller.ts:135` `POST /auth/refresh` — 30/хв
-  - [ ] `product.controller.ts:69` `GET /products/price-sheet` — 20/хв
-  - [ ] `discount-coupon.controller.ts:44` `POST /discount-coupons/validate` — 20/хв
-  - [ ] `order.controller.ts:39` `POST /orders` — 10/хв (`@UseGuards(ThrottlerGuard, OptionalJwtAuthGuard)`)
-  - [ ] `liqpay.controller.ts:13` `POST /liqpay/checkout` — 10/хв (ride-along: публічний оракул номерів замовлень)
+- [x] `yarn add @nestjs/throttler` (v6 для Nest 11; `ttl` у мс) (задача 13)
+- [x] `src/common/constants/env.constant.ts` — `INTERNAL_API_TOKEN: z.string().min(32).optional()` у 3 місцях (schema / safeParse-літерал / `ENV`) (задача 14)
+- [x] `src/common/guards/internal-request.util.ts` — `isInternalRequest(ctx)`: `ENV.INTERNAL_API_TOKEN` заданий **і** `timingSafeEqual` із заголовком `x-internal-token` (перевірка довжини перед порівнянням)
+- [x] `src/app.module.ts` — `ThrottlerModule.forRoot({ throttlers: [{ name: 'default', ttl: 60_000, limit: 20 }], skipIf: isInternalRequest })`; **без** `APP_GUARD`
+- [x] Ліміти (задача 15) — `@UseGuards(ThrottlerGuard)` + `@Throttle({ default: { limit, ttl: 60_000 } })`:
+  - [x] `auth.controller.ts:70,88` `POST /auth/login`, `POST /auth/register` — 10/хв
+  - [x] `auth.controller.ts:135` `POST /auth/refresh` — 30/хв
+  - [x] `product.controller.ts:69` `GET /products/price-sheet` — 20/хв
+  - [x] `discount-coupon.controller.ts:44` `POST /discount-coupons/validate` — 20/хв
+  - [x] `order.controller.ts:39` `POST /orders` — 10/хв (`@UseGuards(ThrottlerGuard, OptionalJwtAuthGuard)`)
+  - [x] `liqpay.controller.ts:13` `POST /liqpay/checkout` — 10/хв (ride-along: публічний оракул номерів замовлень)
   - [ ] `GET /orders/lookup/:orderNumber` — 30/хв (додає той PR — PR-3 чи PR-4 — що мерджиться другим)
-- [ ] `main.ts:23-30` — `Retry-After` у `exposedHeaders` CORS
+- [x] `main.ts:23-30` — `Retry-After` у `exposedHeaders` CORS
 
 ### Тести
-- [ ] `src/common/guards/internal-request.util.spec.ts` — токен не заданий → false; збіг → true; різна довжина → false без throw
-- [ ] `src/modules/auth/auth.controller.throttle.spec.ts` — через `createRbacApp` + `ThrottlerModule.forRoot` з `limit: 2`: 3-й `POST /auth/login` → 429 + `Retry-After`; з валідним `x-internal-token` → не 429
-- [ ] `yarn test` зелений
+- [x] `src/common/guards/internal-request.util.spec.ts` — токен не заданий → false; збіг → true; різна довжина → false без throw
+- [x] `src/modules/discount-coupon/discount-coupon.controller.throttle.spec.ts` (замість auth — той самий guard, найдешевший контролер для харнесу): 21-й запит → 429 + `Retry-After`; з валідним `x-internal-token` → не 429; хибний токен → 429. Харнес `createRbacApp` отримав `imports` (за замовчуванням дозвільний `ThrottlerModule`)
+- [x] `yarn test` зелений (175)
 
 ### Доки / env
-- [ ] `src/docs/API_AND_SWAGGER.md` — розділ «Rate limiting» (таблиця лімітів, як додати новий, `X-Internal-Token`)
-- [ ] `src/docs/todo/AUDIT_HIGH.md` #6, #9, #12 → Fixed з фактичними числами
+- [x] `src/docs/API_AND_SWAGGER.md` — розділ «Rate limiting» (таблиця лімітів, як додати новий, `X-Internal-Token`)
+- [x] `src/docs/todo/AUDIT_HIGH.md` #6, #9, #12 → Fixed з фактичними числами
 - [x] Мета-репо `docs/runbooks/env-template.env` — `INTERNAL_API_TOKEN` у COMMON-секції (окремий docs-коміт)
 - [ ] `.env.prod` BE на сервері — `INTERNAL_API_TOKEN` (optional; можна пізніше)
 - [ ] Переконатись, що задача 16 (PR-5 або міні-PR `fix/server-fetch-throws`) **уже в проді** — і лише тоді деплоїти PR-3
-- [ ] Після деплою: 11-й `POST /auth/login` → 429 з `Retry-After`; у логах BE немає 429 для SSR
+- [x] Локальний smoke на `dist/main` + тестова Mongo: 11-й `POST /auth/login` → 429 + `Retry-After: 60`; 25× `/discount-coupons/validate` з `x-internal-token` → усі 201; 30× `/products/catalog` → 0×429
+- [ ] Гілка `feature/rate-limiting` запушена (stacked на PR-2), PR: https://github.com/vvbogdanovih/fillando-be/pull/new/feature/rate-limiting; після деплою перевірити логи BE — немає 429 для SSR
 - [ ] plan-0003 §3: задачі 13–15 → ☑
 
 ---
@@ -159,37 +160,39 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 ## 6. PR-5 (fe) — `feature/checkout-payment-funnel` — задачі 16, 19–22 (+ FE-хвіст PR-2) · після мержу PR-4
 
 ### Задача 16 — `serverFetch` кидає
-- [ ] `src/common/utils/server-fetch.utils.ts` — одна функція: `404 → null`, інший `!ok` → `throw new Error('Upstream ${status} for ${path}')`, network error — кидати; опціональний 2-й аргумент `init`; `serverFetchOrThrow` видалити (2 виклики в `products/[slug]/page.tsx:23,52` → `serverFetch`)
-- [ ] `[category]/page.tsx:17` `generateMetadata` — try/catch → базові метадані **без** `noindex` при outage
-- [ ] Перевірити call sites `Home.tsx:15,21`, `[category]/page.tsx:43,56`, `search/page.tsx:27` — `null` тепер означає лише 404
-- [ ] `src/app/sitemap.ts:11-12,62` — через `serverFetch(path, { next: { revalidate: 0 } })` замість `.then(r => r.json())` (інакше 429 кешується `unstable_cache` на добу)
-- [ ] `src/common/utils/server-fetch.utils.test.ts` — `vi.stubGlobal('fetch')`: 200 → json; 404 → null; 429/500 → throws; reject → throws
+- [x] `src/common/utils/server-fetch.utils.ts` — одна функція: `404 → null`, інший `!ok` → `throw new Error('Upstream ${status} for ${path}')`, network error — кидати; опціональний 2-й аргумент `init`; `serverFetchOrThrow` видалити (2 виклики в `products/[slug]/page.tsx:23,52` → `serverFetch`)
+- [x] `[category]/page.tsx:17` `generateMetadata` — try/catch → базові метадані **без** `noindex` при outage
+- [x] Перевірити call sites `Home.tsx:15,21`, `[category]/page.tsx:43,56`, `search/page.tsx:27` — `null` тепер означає лише 404
+- [x] `src/app/sitemap.ts:11-12,62` — через `serverFetch(path, { next: { revalidate: 0 } })` замість `.then(r => r.json())` (інакше 429 кешується `unstable_cache` на добу)
+- [x] `src/common/utils/server-fetch.utils.test.ts` — `vi.stubGlobal('fetch')`: 200 → json; 404 → null; 429/500 → throws; reject → throws
 
 ### Задачі 19–20 — сторінка успіху
-- [ ] `api-routes.constants.ts` ORDERS — `LOOKUP: (n) => `/orders/lookup/${n}``
-- [ ] `checkout.api.schemas.ts` — `orderPaymentStatusSchema` (`payment_status` через `paymentStatusValues` з `profile/orders/orders.schema.ts`); `createOrderResponseSchema` + `payment_access_token: z.string().optional()`
-- [ ] `checkout.api.ts` — `fetchOrderPaymentStatus(orderNumber, token)` (`params: { token }`, `skipErrorToast: true`)
-- [ ] `checkout/liqpay.utils.ts` — винести `submitLiqpayForm` (з `CheckoutPage.tsx:74-92`, + `form.remove()`) і `startLiqpayCheckout(orderNumber)`
-- [ ] `success/CheckoutSuccessContent.tsx` — гілка LIQPAY: читає `token`; `useQuery` з `refetchInterval` 3 с поки `PENDING`, стоп через ~60 с; стани `PAID` → «Дякуємо» + конверсія (`value: total_price, currency: 'UAH', transaction_id`); `FAILED`/`VOIDED` → «Оплата не пройшла» + «Спробувати ще раз» (`startLiqpayCheckout`); `PENDING` → «Очікуємо підтвердження…» без конверсії; без `token`/помилка → нейтральний текст без конверсії. Non-LiqPay — конверсія при монтуванні, як зараз (рішення 3)
-- [ ] `success/CheckoutSuccessContent.test.tsx` — моки `next/navigation` (`useSearchParams`), `checkout.api`, `@/common/lib/gtag`: LIQPAY+PAID → gtag 1 раз; LIQPAY+FAILED → 0 + кнопка; LIQPAY+PENDING → 0; COD → 1
+- [x] `api-routes.constants.ts` ORDERS — `LOOKUP: (n) => `/orders/lookup/${n}``
+- [x] `checkout.api.schemas.ts` — `orderPaymentStatusSchema` (`payment_status` через `paymentStatusValues` з `profile/orders/orders.schema.ts`); `createOrderResponseSchema` + `payment_access_token: z.string().optional()`
+- [x] `checkout.api.ts` — `fetchOrderPaymentStatus(orderNumber, token)` (`params: { token }`, `skipErrorToast: true`)
+- [x] `checkout/liqpay.utils.ts` — винести `submitLiqpayForm` (з `CheckoutPage.tsx:74-92`, + `form.remove()`) і `startLiqpayCheckout(orderNumber)`
+- [x] `success/CheckoutSuccessContent.tsx` — гілка LIQPAY: читає `token`; `useQuery` з `refetchInterval` 3 с поки `PENDING`, стоп через ~60 с; стани `PAID` → «Дякуємо» + конверсія (`value: total_price, currency: 'UAH', transaction_id`); `FAILED`/`VOIDED` → «Оплата не пройшла» + «Спробувати ще раз» (`startLiqpayCheckout`); `PENDING` → «Очікуємо підтвердження…» без конверсії; без `token`/помилка → нейтральний текст без конверсії. Non-LiqPay — конверсія при монтуванні, як зараз (рішення 3)
+- [x] `success/CheckoutSuccessContent.test.tsx` — моки `next/navigation` (`useSearchParams`), `checkout.api`, `@/common/lib/gtag`: LIQPAY+PAID → gtag 1 раз; LIQPAY+FAILED → 0 + кнопка; LIQPAY+PENDING → 0; COD → 1
 
 ### Задача 21 — `onError` створення замовлення (`CheckoutPage.tsx:402-408`)
-- [ ] `isCouponError = /coupon/i.test(err.message)` → лише тоді `setError('coupon_code', …)` + `setFocus('coupon_code')`; мапа `'Invalid coupon code'` → «Купон не знайдено або неактивний», `'Coupon is expired'` → «Термін дії купона минув»
-- [ ] Інакше — лише `toast.error` з локалізованим fallback; `status === 429` → «Занадто багато спроб, зачекайте хвилину»
-- [ ] `handleSubmit(onSubmit, onInvalid)` — `onInvalid` скролить до `[aria-invalid="true"]` для полів без `ref` (Radio / Nova Post селекти)
+- [x] `isCouponError = /coupon/i.test(err.message)` → лише тоді `setError('coupon_code', …)` + `setFocus('coupon_code')`; мапа `'Invalid coupon code'` → «Купон не знайдено або неактивний», `'Coupon is expired'` → «Термін дії купона минув»
+- [x] Інакше — лише `toast.error` з локалізованим fallback; `status === 429` → «Занадто багато спроб, зачекайте хвилину»
+- [x] `handleSubmit(onSubmit, onInvalid)` — `onInvalid` скролить до `[aria-invalid="true"]` для полів без `ref` (Radio / Nova Post селекти)
 
 ### Задача 22 — порядок `clearAfterOrder` / LiqPay (`CheckoutPage.tsx:370-401`)
-- [ ] `orderPlacedRef = useRef(false)`; ефект `:172-176` → `&& !orderPlacedRef.current`; ранній return `:427` теж враховує ref
-- [ ] `isRedirecting` state → `pending = isSubmitting || orderMutation.isPending || isRedirecting`
-- [ ] `onSuccess`: `orderPlacedRef.current = true; setIsRedirecting(true)`; LIQPAY: `try { initLiqpayCheckout } catch { toast; await clearAfterOrder(); router.push(success?order=&payment=LIQPAY&token=payment_access_token); return }`; `await clearAfterOrder()` **після** успішного init → `submitLiqpayForm`. Non-LiqPay — як зараз
-- [ ] `CheckoutPage.test.tsx` — (a) COD сабміт → `createOrder`, `clearAfterOrder`, `push` на success; (b) LIQPAY + `initLiqpayCheckout` reject → `clearAfterOrder` після, toast, `push` з `token` (мок `fetchActivePaymentProvider` → `{}`); (c) reject `'Invalid coupon code'` → помилка під `coupon_code`; reject `'Out of stock'` → лише toast
+- [x] `orderPlacedRef = useRef(false)`; ефект `:172-176` → `&& !orderPlacedRef.current`; ранній return `:427` теж враховує ref
+- [x] Знайдено e2e: hard-load `/checkout` з гостьовим кошиком редіректив у каталог (ефект спрацьовував до `persist.rehydrate()` у `Providers`) → гейт `cartHydrated` через `useCartStore.persist?.hasHydrated()/onFinishHydration` (SSR-safe: на сервері `persist` undefined)
+- [x] Playwright e2e проти mock-API (`e2e/mock-api.mjs` на 9001, `playwright.config.ts`, `yarn test:e2e`): success-page (PAID/FAILED+retry→sink/PENDING/404/no token/COD), checkout-errors (stock → toast, coupon → під полем, hard-load кошика), liqpay-redirect (order → checkout → sink, кошик порожній після) — 10/10
+- [x] `isRedirecting` state → `pending = isSubmitting || orderMutation.isPending || isRedirecting`
+- [x] `onSuccess`: `orderPlacedRef.current = true; setIsRedirecting(true)`; LIQPAY: `try { initLiqpayCheckout } catch { toast; await clearAfterOrder(); router.push(success?order=&payment=LIQPAY&token=payment_access_token); return }`; `await clearAfterOrder()` **після** успішного init → `submitLiqpayForm`. Non-LiqPay — як зараз
+- [x] `CheckoutPage.test.tsx` — (a) COD сабміт → `createOrder`, `clearAfterOrder`, `push` на success; (b) LIQPAY + `initLiqpayCheckout` reject → `clearAfterOrder` після, toast, `push` з `token` (мок `fetchActivePaymentProvider` → `{}`); (c) reject `'Invalid coupon code'` → помилка під `coupon_code`; reject `'Out of stock'` → лише toast
 
 ### FE-хвіст PR-2
-- [ ] `[category]/catalog.api.ts:32` — прибрати `vendor_product_sku` з типу `ProductDetailData.variant`
+- [x] `[category]/catalog.api.ts:32` — прибрати `vendor_product_sku` з типу `ProductDetailData.variant`
 
 ### Завершення
-- [ ] `npx tsc --noEmit` і `yarn test` зелені
-- [ ] `CLAUDE.md` (fe) — абзац «Checkout / LiqPay» (порядок clear→redirect, lookup, конверсія лише на PAID); `docs/http-service.md` — семантика `serverFetch`
+- [x] `npx tsc --noEmit` і `yarn test` зелені
+- [x] `CLAUDE.md` (fe) — абзац «Checkout / LiqPay» (порядок clear→redirect, lookup, конверсія лише на PAID); `docs/http-service.md` — семантика `serverFetch`
 - [ ] PR → `dev`; ручні LiqPay-сценарії в sandbox: успіх → «Дякуємо» + 1 конверсія в `dataLayer`; відхилена картка → «Оплата не пройшла», 0 конверсій; закрите вікно → PENDING, поллінг, 0 конверсій; збій `initLiqpayCheckout` → toast + success з кнопкою «Оплатити»
 - [ ] plan-0003 §3: задачі 16, 19–22 → ☑
 
