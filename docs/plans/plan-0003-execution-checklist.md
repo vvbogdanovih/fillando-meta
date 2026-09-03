@@ -193,7 +193,7 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 ### Завершення
 - [x] `npx tsc --noEmit` і `yarn test` зелені
 - [x] `CLAUDE.md` (fe) — абзац «Checkout / LiqPay» (порядок clear→redirect, lookup, конверсія лише на PAID); `docs/http-service.md` — семантика `serverFetch`
-- [ ] PR → `dev`; ручні LiqPay-сценарії в sandbox: успіх → «Дякуємо» + 1 конверсія в `dataLayer`; відхилена картка → «Оплата не пройшла», 0 конверсій; закрите вікно → PENDING, поллінг, 0 конверсій; збій `initLiqpayCheckout` → toast + success з кнопкою «Оплатити»
+- [ ] PR → `dev` — гілка `feature/checkout-payment-funnel` запушена (коміт 8de8174), PR: https://github.com/vvbogdanovih/fillando-fe/pull/new/feature/checkout-payment-funnel (база → `dev`); ручні LiqPay-сценарії в sandbox: успіх → «Дякуємо» + 1 конверсія в `dataLayer`; відхилена картка → «Оплата не пройшла», 0 конверсій; закрите вікно → PENDING, поллінг, 0 конверсій; збій `initLiqpayCheckout` → toast + success з кнопкою «Оплатити»
 - [ ] plan-0003 §3: задачі 16, 19–22 → ☑
 
 ---
