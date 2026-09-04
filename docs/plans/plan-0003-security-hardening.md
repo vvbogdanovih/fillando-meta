@@ -1,6 +1,6 @@
 # Plan-0003 — Вразливості та воронка замовлення
 
-- **Status:** Approved
+- **Status:** In Progress — код усіх 23 задач змерджено в `dev` обох репо (2026-09-04); лишається реліз `dev → main`, деплой і ручні LiqPay-сценарії
 - **Owner:** vvbogdanovih
 - **Date:** 2026-09-03
 - **Target:** перед стартом Plan-0004
@@ -39,13 +39,13 @@ Definition of done:
 
 | # | Task | Component | Depends on | Status |
 |---|------|-----------|------------|--------|
-| 1 | `RolesGuard` + `@Roles(Role.ADMIN)` на write-ендпоінти **каталогу**: `POST /products`, `PATCH`/`DELETE /products/:id`, увесь variant CRUD, `PATCH` зображень варіанта, `POST /products/validate`. Порядок guard-ів обов'язково `(JwtAuthGuard, RolesGuard)` | fillando-be | — | ☐ |
-| 2 | Те саме на **вендорів**: `POST /vendors`, `PATCH /vendors/:id`, `DELETE /vendors/:id` (`vendor.controller.ts:33-48` — зараз голий `JwtAuthGuard`). Це та сама позиція `AUDIT_CRITICAL #3` | fillando-be | — | ☐ |
-| 3 | Те саме на `UploadController` — зараз лише `JwtAuthGuard`, тож USER може стерти весь медіа-каталог у S3 (без версіонування = незворотно). Аватар не є upload-флоу (у профілі це текстове поле URL), окремого USER-шляху не треба | fillando-be | — | ☐ |
-| 4 | `Roles` decorator: `(...roles: Role[])` замість `string[]` — зараз `@Roles('ADMN')` з опечаткою компілюється і **мовчки закриває ендпоінт для всіх** | fillando-be | — | ☐ |
-| 5 | `RolesGuard`: default-deny замість `return true` при відсутніх метаданих + null-check на `user.role` | fillando-be | 4 | ☐ |
-| 6 | Integration-тест guard-ів через `Test.createTestingModule` з мок-`Reflector` і мок-`user`: USER→403, ADMIN→200 на кожному ендпоінті задач 1–3 | fillando-be | 1, 2, 3 | ☐ |
-| 7 | Оновити `src/docs/RBAC.md` (прибрати AUDIT_CRITICAL #3 зі списку відкритих) і `AUDIT_CRITICAL.md` | fillando-be | 6 | ☐ |
+| 1 | `RolesGuard` + `@Roles(Role.ADMIN)` на write-ендпоінти **каталогу**: `POST /products`, `PATCH`/`DELETE /products/:id`, увесь variant CRUD, `PATCH` зображень варіанта, `POST /products/validate`. Порядок guard-ів обов'язково `(JwtAuthGuard, RolesGuard)` | fillando-be | — | ☑ |
+| 2 | Те саме на **вендорів**: `POST /vendors`, `PATCH /vendors/:id`, `DELETE /vendors/:id` (`vendor.controller.ts:33-48` — зараз голий `JwtAuthGuard`). Це та сама позиція `AUDIT_CRITICAL #3` | fillando-be | — | ☑ |
+| 3 | Те саме на `UploadController` — зараз лише `JwtAuthGuard`, тож USER може стерти весь медіа-каталог у S3 (без версіонування = незворотно). Аватар не є upload-флоу (у профілі це текстове поле URL), окремого USER-шляху не треба | fillando-be | — | ☑ |
+| 4 | `Roles` decorator: `(...roles: Role[])` замість `string[]` — зараз `@Roles('ADMN')` з опечаткою компілюється і **мовчки закриває ендпоінт для всіх** | fillando-be | — | ☑ |
+| 5 | `RolesGuard`: default-deny замість `return true` при відсутніх метаданих + null-check на `user.role` | fillando-be | 4 | ☑ |
+| 6 | Integration-тест guard-ів через `Test.createTestingModule` з мок-`Reflector` і мок-`user`: USER→403, ADMIN→200 на кожному ендпоінті задач 1–3 | fillando-be | 1, 2, 3 | ☑ |
+| 7 | Оновити `src/docs/RBAC.md` (прибрати AUDIT_CRITICAL #3 зі списку відкритих) і `AUDIT_CRITICAL.md` | fillando-be | 6 | ☑ |
 
 > **Задача 6 — навмисно integration, не e2e.** E2E-харнесу в репо не
 > існує: `test/jest-e2e.json`, на який посилається скрипт `test:e2e`,
@@ -58,11 +58,11 @@ Definition of done:
 
 | # | Task | Component | Depends on | Status |
 |---|------|-----------|------------|--------|
-| 8 | Прибрати `prom_id` і `vendor_product_sku` з публічних поверхонь: `findVariantWithProduct` (`GET /products/by-slug/:slug`) — allowlist-проєкцією (`toPublicVariant`), не фільтрацією в мапері; `GET /products/:id/variants` і `GET /products/:id/variants/:variantId` — **закрити під ADMIN** (їх використовує лише адмінка, якій ці поля потрібні для редагування) | fillando-be | — | ☐ |
-| 9 | `findPriceSheet` — `{ $match: { status: ACTIVE } }` першою стадією; заразом прибрати з її `$project` поля `prom_id` і `vendor_product_sku` (сьогодні від витоку рятує лише мапер у сервісі — крихко) | fillando-be | — | ☐ |
-| 10 | `findAllSlugs` — фільтр `status: ACTIVE` (джерело `sitemap.xml`). **Єдиний власник цієї задачі — цей PR**; TD-0006 §9 крок 2 її не робить | fillando-be | — | ☐ |
-| 11 | `GET /products` — **закрити під ADMIN** (`JwtAuthGuard, RolesGuard`). Рішення, не альтернатива: ендпоінт віддає всі продукти без пагінації й без фільтра статусу, а публічна вітрина його не використовує (каталог іде через `/products/catalog`) | fillando-be | 1 | ☐ |
-| 12 | Перевірити відповіді на відсутність `prom_*` автотестом (snapshot на публічні проєкції) — інакше наступний споживач проєкції зіллє їх знову | fillando-be | 8, 9 | ☐ |
+| 8 | Прибрати `prom_id` і `vendor_product_sku` з публічних поверхонь: `findVariantWithProduct` (`GET /products/by-slug/:slug`) — allowlist-проєкцією (`toPublicVariant`), не фільтрацією в мапері; `GET /products/:id/variants` і `GET /products/:id/variants/:variantId` — **закрити під ADMIN** (їх використовує лише адмінка, якій ці поля потрібні для редагування) | fillando-be | — | ☑ |
+| 9 | `findPriceSheet` — `{ $match: { status: ACTIVE } }` першою стадією; заразом прибрати з її `$project` поля `prom_id` і `vendor_product_sku` (сьогодні від витоку рятує лише мапер у сервісі — крихко) | fillando-be | — | ☑ |
+| 10 | `findAllSlugs` — фільтр `status: ACTIVE` (джерело `sitemap.xml`). **Єдиний власник цієї задачі — цей PR**; TD-0006 §9 крок 2 її не робить | fillando-be | — | ☑ |
+| 11 | `GET /products` — **закрити під ADMIN** (`JwtAuthGuard, RolesGuard`). Рішення, не альтернатива: ендпоінт віддає всі продукти без пагінації й без фільтра статусу, а публічна вітрина його не використовує (каталог іде через `/products/catalog`) | fillando-be | 1 | ☑ |
+| 12 | Перевірити відповіді на відсутність `prom_*` автотестом (snapshot на публічні проєкції) — інакше наступний споживач проєкції зіллє їх знову | fillando-be | 8, 9 | ☑ |
 
 > Заміна рядкових літералів `'active'` на `ProductStatus.ACTIVE` в
 > агрегаціях **свідомо перенесена** у [Plan-0004](plan-0004-catalog-phase-1.md)
@@ -81,10 +81,10 @@ SSR-трафік**. `serverFetch` фронтенду ходить у бек че
 
 | # | Task | Component | Depends on | Status |
 |---|------|-----------|------------|--------|
-| 13 | `@nestjs/throttler` — підключити, але **без глобального ліміту на публічні GET каталогу** | fillando-be | — | ☐ |
-| 14 | Секретний заголовок від фронтенду (`X-Internal-Token`, новий env у обох репо) → `@SkipThrottle` для SSR-трафіку. Альтернатива, якщо простіше: allowlist IP фронт-контейнера | both | 13 | ☐ |
-| 15 | Ліміти по ендпоінтах із **конкретними числами**: `/auth/login` і `/auth/register` — 10/хв на IP; `/auth/refresh` — 30/хв; `/products/price-sheet` — 20/хв; `/discount-coupons/validate` — 20/хв; `POST /orders` — 10/хв | fillando-be | 13, 14 | ☐ |
-| 16 | `serverFetch` має **кидати** на 429/5xx, а не повертати `null` — інакше тротлінг отруює ISR-кеш порожніми сторінками | fillando-fe | — | ☐ |
+| 13 | `@nestjs/throttler` — підключити, але **без глобального ліміту на публічні GET каталогу** | fillando-be | — | ☑ |
+| 14 | Секретний заголовок від фронтенду (`X-Internal-Token`, новий env у обох репо) → `@SkipThrottle` для SSR-трафіку. Альтернатива, якщо простіше: allowlist IP фронт-контейнера | both | 13 | ☑ |
+| 15 | Ліміти по ендпоінтах із **конкретними числами**: `/auth/login` і `/auth/register` — 10/хв на IP; `/auth/refresh` — 30/хв; `/products/price-sheet` — 20/хв; `/discount-coupons/validate` — 20/хв; `POST /orders` — 10/хв | fillando-be | 13, 14 | ☑ |
+| 16 | `serverFetch` має **кидати** на 429/5xx, а не повертати `null` — інакше тротлінг отруює ISR-кеш порожніми сторінками | fillando-fe | — | ☑ |
 
 ### PR-4 (be) + PR-5 (fe) — воронка замовлення
 
@@ -93,18 +93,18 @@ SSR-трафік**. `serverFetch` фронтенду ходить у бек че
 
 | # | Task | Component | Depends on | Status |
 |---|------|-----------|------------|--------|
-| 17 | Публічний lookup статусу оплати за `order_number` + токеном (мінімальна відповідь: `order_number`, `payment_status`, `total`). Без нього фронт не має джерела правди: `result_url` LiqPay однаковий для успіху й відмови, а всі `GET /orders/*` під JWT — гість не прочитає | fillando-be | — | ☐ |
-| 18 | Оновити `src/docs/` опис LiqPay-флоу | fillando-be | 17 | ☐ |
-| 19 | Сторінка успіху: для `payment=LIQPAY` тягне фактичний `payment_status` (задача 17). `PAID` → «Дякуємо» + конверсія; `FAILED`/`VOIDED` → «Оплата не пройшла» з кнопкою повторити (`initLiqpayCheckout` уже існує); `PENDING` → «очікуємо підтвердження», **без конверсії** | fillando-fe | 17 | ☐ |
-| 20 | Конверсія в Google Ads відправляється **лише** на `PAID` | fillando-fe | 19 | ☐ |
-| 21 | `onError` створення замовлення: лишити `toast.error`; `setError('coupon_code')` викликати **тільки** для купон-специфічної помилки. Скрол до першої помилки | fillando-fe | — | ☐ |
-| 22 | Перенести `clearAfterOrder()` **після** успішного `initLiqpayCheckout`, а сам виклик обгорнути в try/catch із тостом і посиланням на оплату замовлення. Зараз кошик чиститься до редіректу, і якщо виклик впаде — `onError` мутації не спрацює (він ловить лише `mutationFn`), користувач лишається на чекауті з порожнім кошиком і PENDING-замовленням | fillando-fe | — | ☐ |
+| 17 | Публічний lookup статусу оплати за `order_number` + токеном (мінімальна відповідь: `order_number`, `payment_status`, `total`). Без нього фронт не має джерела правди: `result_url` LiqPay однаковий для успіху й відмови, а всі `GET /orders/*` під JWT — гість не прочитає | fillando-be | — | ☑ |
+| 18 | Оновити `src/docs/` опис LiqPay-флоу | fillando-be | 17 | ☑ |
+| 19 | Сторінка успіху: для `payment=LIQPAY` тягне фактичний `payment_status` (задача 17). `PAID` → «Дякуємо» + конверсія; `FAILED`/`VOIDED` → «Оплата не пройшла» з кнопкою повторити (`initLiqpayCheckout` уже існує); `PENDING` → «очікуємо підтвердження», **без конверсії** | fillando-fe | 17 | ☑ |
+| 20 | Конверсія в Google Ads відправляється **лише** на `PAID` | fillando-fe | 19 | ☑ |
+| 21 | `onError` створення замовлення: лишити `toast.error`; `setError('coupon_code')` викликати **тільки** для купон-специфічної помилки. Скрол до першої помилки | fillando-fe | — | ☑ |
+| 22 | Перенести `clearAfterOrder()` **після** успішного `initLiqpayCheckout`, а сам виклик обгорнути в try/catch із тостом і посиланням на оплату замовлення. Зараз кошик чиститься до редіректу, і якщо виклик впаде — `onError` мутації не спрацює (він ловить лише `mutationFn`), користувач лишається на чекауті з порожнім кошиком і PENDING-замовленням | fillando-fe | — | ☑ |
 
 ### PR-6 (fe) — інфраструктурний фікс
 
 | # | Task | Component | Depends on | Status |
 |---|------|-----------|------------|--------|
-| 23 | `docker-compose.prod.yml`: прокинути `NEXT_PUBLIC_GOOGLE_ADS_ID` і `NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_CONVERSION` у build `args`. **Власник задачі — цей план**; [TD-0006 §5.5](../designs/TD-0006-google-merchant-feed-and-structured-data.md) додає до того самого блоку ще дві змінні пізніше, конфлікту немає | fillando-fe | — | ☐ |
+| 23 | `docker-compose.prod.yml`: прокинути `NEXT_PUBLIC_GOOGLE_ADS_ID` і `NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_CONVERSION` у build `args`. **Власник задачі — цей план**; [TD-0006 §5.5](../designs/TD-0006-google-merchant-feed-and-structured-data.md) додає до того самого блоку ще дві змінні пізніше, конфлікту немає | fillando-fe | — | ☑ |
 
 ## 4. Sequencing & milestones
 

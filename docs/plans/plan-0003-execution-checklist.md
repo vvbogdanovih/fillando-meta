@@ -62,8 +62,8 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 - [x] `src/docs/todo/AUDIT_CRITICAL.md` #3 → Fixed (обрано role-check, не ownership); `src/docs/TODO.md` — статус #3; `src/docs/todo/README.md` — прибрати з «Негайно»
 - [x] `src/docs/API_AND_SWAGGER.md` §4 — прибрати «RolesGuard not yet applied to any endpoint»
 - [x] `yarn spec:export`
-- [ ] PR → `dev` — гілка `feature/rbac-admin-write-endpoints` запушена (коміт afd59c1), PR відкрити: https://github.com/vvbogdanovih/fillando-be/pull/new/feature/rbac-admin-write-endpoints (база → `dev`); після мержу — деплой; ручна перевірка: USER-cookie `PATCH /products/:id` → 403; адмінка створює товар → 201
-- [ ] plan-0003 §3: задачі 1–7 → ☑
+- [x] Змерджено в `dev` (merge 3af641d разом із PR-2/PR-3). Після деплою: ручна перевірка USER-cookie `PATCH /products/:id` → 403; адмінка створює товар → 201
+- [x] plan-0003 §3: задачі 1–7 → ☑ (2026-09-04)
 
 ---
 
@@ -85,13 +85,13 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 - [x] `product.controller.rbac.spec.ts` — додати `GET /products`, `GET /products/:id/variants`, `GET /products/:id/variants/:variantId`
 - [x] `product-variant.repository.int-spec.ts` — інтеграційний тест на реальній Mongo (`yarn test:integration`): only-active у slugs/count/price-sheet/by-slug, жодного prom-поля в payload, vendor SKU не шукається, admin `findByProductId` повний
 - [x] Ride-along з ревʼю PR-2 (винесено в **PR-4b** `feature/order-customer-projection` від PR-4, коміт ce27979, запушено; PR: https://github.com/vvbogdanovih/fillando-be/pull/new/feature/order-customer-projection, база → `feature/order-payment-lookup`): `POST /orders` і `GET /orders/me*` без `items[].vendor_sku`; DRAFT/ARCHIVED варіанти → 400 у замовленні, 409/removed_items у кошику; тести order/cart
-- [ ] `yarn test` зелений
+- [x] `yarn test` зелений
 
 ### Доки
 - [x] `src/docs/PRICE_SHEET.md` — фільтр `active`, прибрані поля; `src/docs/DATA_MODELS.md:229` — «internal, never exposed publicly»; `src/docs/API_AND_SWAGGER.md` §5 — `GET /products` admin
 - [x] `yarn spec:export`
-- [ ] PR → `dev` — гілка `feature/public-projection-hardening` запушена (коміт 0f46afd, stacked на PR-1), PR відкрити: https://github.com/vvbogdanovih/fillando-be/pull/new/feature/public-projection-hardening (база → `feature/rbac-admin-write-endpoints` або `dev` після мержу PR-1); ручна перевірка після деплою: `by-slug` без prom-полів, draft-slug → 404, `variants/slugs` без draft, `price-sheet?q=<vendor sku>` → порожньо
-- [ ] plan-0003 §3: задачі 8–12 → ☑
+- [x] Змерджено в `dev` (3af641d). Після деплою: `by-slug` без prom-полів, draft-slug → 404, `variants/slugs` без draft, `price-sheet?q=<vendor sku>` → порожньо
+- [x] plan-0003 §3: задачі 8–12 → ☑ (2026-09-04)
 
 ---
 
@@ -109,7 +109,7 @@ Plan-0003 закриває дефекти, що експлуатуються с�
   - [x] `discount-coupon.controller.ts:44` `POST /discount-coupons/validate` — 20/хв
   - [x] `order.controller.ts:39` `POST /orders` — 10/хв (`@UseGuards(ThrottlerGuard, OptionalJwtAuthGuard)`)
   - [x] `liqpay.controller.ts:13` `POST /liqpay/checkout` — 10/хв (ride-along: публічний оракул номерів замовлень)
-  - [ ] `GET /orders/lookup/:orderNumber` — 30/хв (додає той PR — PR-3 чи PR-4 — що мерджиться другим)
+  - [x] `GET /orders/lookup/:orderNumber` — 30/хв (додано в merge-коміті 0f12352)
 - [x] `main.ts:23-30` — `Retry-After` у `exposedHeaders` CORS
 
 ### Тести
@@ -122,10 +122,10 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 - [x] `src/docs/todo/AUDIT_HIGH.md` #6, #9, #12 → Fixed з фактичними числами
 - [x] Мета-репо `docs/runbooks/env-template.env` — `INTERNAL_API_TOKEN` у COMMON-секції (окремий docs-коміт)
 - [ ] `.env.prod` BE на сервері — `INTERNAL_API_TOKEN` (optional; можна пізніше)
-- [ ] Переконатись, що задача 16 (PR-5 або міні-PR `fix/server-fetch-throws`) **уже в проді** — і лише тоді деплоїти PR-3
+- [x] Задача 16 у `dev` фронту разом із PR-5; при релізі деплоїти **BE, потім FE** без великої паузи (lookup має існувати до FE; ліміти й `serverFetch` вирівнюються тим самим релізом)
 - [x] Локальний smoke на `dist/main` + тестова Mongo: 11-й `POST /auth/login` → 429 + `Retry-After: 60`; 25× `/discount-coupons/validate` з `x-internal-token` → усі 201; 30× `/products/catalog` → 0×429
-- [ ] Гілка `feature/rate-limiting` запушена (stacked на PR-2), PR: https://github.com/vvbogdanovih/fillando-be/pull/new/feature/rate-limiting; після деплою перевірити логи BE — немає 429 для SSR
-- [ ] plan-0003 §3: задачі 13–15 → ☑
+- [x] Змерджено в `dev` (3af641d); після деплою перевірити логи BE — немає 429 для SSR
+- [x] plan-0003 §3: задачі 13–15 → ☑ (2026-09-04)
 
 ---
 
@@ -152,8 +152,8 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 - [x] Новий `src/docs/LIQPAY_FLOW.md` — checkout → redirect → callback → `applyGatewayPaymentResult`; чому `result_url` не є джерелом правди; lookup + HMAC-токен; посилання на TD-0001 і `state-machines.md`
 - [x] `API_AND_SWAGGER.md` §5 і `ORDER_ADMIN_API.md:83` — згадати LIQPAY_FLOW
 - [x] `yarn spec:export`
-- [ ] PR → `dev`; після деплою: `GET /orders/lookup/FO-0000001?token=bad` → 404, з правильним → 4 поля
-- [ ] plan-0003 §3: задачі 17–18 → ☑
+- [x] Змерджено в `dev` (0f12352 разом із PR-4b; `@Throttle 30/хв` на lookup додано в merge-коміті). Після деплою: `GET /orders/lookup/FO-0000001?token=bad` → 404, з правильним → 4 поля
+- [x] plan-0003 §3: задачі 17–18 → ☑ (2026-09-04)
 
 ---
 
@@ -194,8 +194,8 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 - [x] `npx tsc --noEmit` і `yarn test` зелені
 - [x] Ревʼю PR-5 закрито (fixup-коміт): `cartReady` також чекає першу відповідь серверного кошика (`hasFetched`) для авторизованих; lookup без retry на 404/400; `serverFetch` не додає `revalidate` при явному `cache`; `(root)/error.tsx` українською; e2e на порту 9100 з примусовим mock-API (реальний бек недосяжний), без фіксованих sleep-ів, +сценарій «Order is already paid»; vitest 66, e2e 11/11
 - [x] `CLAUDE.md` (fe) — абзац «Checkout / LiqPay» (порядок clear→redirect, lookup, конверсія лише на PAID); `docs/http-service.md` — семантика `serverFetch`
-- [ ] PR → `dev` — гілка `feature/checkout-payment-funnel` запушена (коміт 8de8174), PR: https://github.com/vvbogdanovih/fillando-fe/pull/new/feature/checkout-payment-funnel (база → `dev`); ручні LiqPay-сценарії в sandbox: успіх → «Дякуємо» + 1 конверсія в `dataLayer`; відхилена картка → «Оплата не пройшла», 0 конверсій; закрите вікно → PENDING, поллінг, 0 конверсій; збій `initLiqpayCheckout` → toast + success з кнопкою «Оплатити»
-- [ ] plan-0003 §3: задачі 16, 19–22 → ☑
+- [x] Змерджено в `dev` (0206f88). Після деплою — ручні LiqPay-сценарії в sandbox: успіх → «Дякуємо» + 1 конверсія; відхилена картка → «Оплата не пройшла», 0 конверсій; закрите вікно → PENDING, поллінг, 0 конверсій; збій `initLiqpayCheckout` → toast + success із кнопкою «Оплатити»
+- [x] plan-0003 §3: задачі 16, 19–22 → ☑ (2026-09-04)
 
 ---
 
@@ -203,8 +203,8 @@ Plan-0003 закриває дефекти, що експлуатуються с�
 
 - [x] `docker-compose.prod.yml:6-12` — `NEXT_PUBLIC_GOOGLE_ADS_ID: AW-18332229942`, `NEXT_PUBLIC_GOOGLE_ADS_PURCHASE_CONVERSION: AW-18332229942/vho6CLCit9McELbCvqVE` (ARG-и в `Dockerfile.prod:12-13,19-20` уже є)
 - [x] `.dockerignore` — `.env*`, `node_modules`, `.next` (окремим комітом; сьогодні `COPY . .` тягне локальний `.env`)
-- [ ] PR → `dev`
-- [ ] plan-0003 §3: задача 23 → ☑
+- [x] Змерджено в `dev` (78de58f)
+- [x] plan-0003 §3: задача 23 → ☑ (2026-09-04)
 
 ---
 
@@ -215,8 +215,8 @@ PR-1 ──► PR-2 ──► PR-3 (be)          PR-6 (fe) — будь-коли
 PR-4 (be, паралельно з PR-2/3) ──► PR-5 (fe)
 ```
 
-- [ ] PR-1 задеплоєно того ж дня
-- [ ] Задача 16 у проді **до** задачі 15 (якщо PR-5 відстає — міні-PR `fix/server-fetch-throws`)
-- [ ] PR-4 у проді до PR-5 (старі `result_url` без `token` → нейтральний стан, без конверсії — безпечно)
+- [ ] Реліз `dev → main` обох репо (BE, потім FE) — PR-1 має бути в проді якнайшвидше
+- [x] Задача 16 і 15 виходять одним релізом (див. вище)
+- [x] PR-4 і PR-5 у `dev` одночасно; порядок деплою: BE → FE
 - [ ] `dev → main` реліз; після кожного BE-релізу `openapi.json` актуальний
 - [ ] Усі 23 задачі ☑ → plan-0003 `Status: Done`; оновити `docs/requirements/FRD.md` (RBAC, rate limiting, lookup статусу оплати, LiqPay-воронка); видалити plan-0003 і цей чекліст
