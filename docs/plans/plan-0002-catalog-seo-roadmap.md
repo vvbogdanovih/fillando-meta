@@ -200,17 +200,24 @@ hasMerchantReturnPolicy — націлено на Google Merchant listings), ж�
 
 ## 4. Прибирання боргу
 
-Робиться разом із фазою 1 — ці документи описують структуру, скасовану
-міграцією `flatten-categories.js` (коміт `dfeebff` оновив FRD, але не їх):
+**Закрито 2026-09-04 (Plan-0004, блок PR-6).** Перелік нижче лишається як запис
+того, що виявилось насправді — він відрізнявся від того, що тут було написано.
 
-- [`architecture/domain-model.md`](../architecture/domain-model.md) — ER-діаграма
-  з `subcategories[]`, `products.subcategory_id`, рядки «Subcategories in
-  Category» в таблиці embedded-vs-referenced. Також бракує `wholesale_inquiries`
-  і `payment_providers`.
-- [`glossary.md`](../glossary.md) — Category як «hierarchical grouping»,
-  breadcrumbs як «category-path».
-- `fillando-be/src/docs/DATA_MODELS.md` — Product зі `slug`, `images`, `price`,
-  `status` і вбудованими `variants[]`, чого в схемі немає.
+Виправлено ще до Plan-0004, пізнішими комітами:
+
+- [`architecture/domain-model.md`](../architecture/domain-model.md) — ER-діаграми
+  з `subcategories[]` і `products.subcategory_id` уже не було; `wholesale_inquiries`
+  і `payment_providers` уже були в таблиці.
+- [`glossary.md`](../glossary.md) — «hierarchical grouping» і «category-path» уже
+  прибрані.
+
+`fillando-be/src/docs/DATA_MODELS.md` — **опис боргу тут був хибний**. Файл не
+описував вбудованих `variants[]`: він з самого початку каже, що товар — це
+«спільний заголовок» своїх варіантів, а slug, SKU, ціна й статус живуть в окремій
+колекції. Реальна розбіжність, знайдена звіркою кожного `@Prop` із таблицями,
+була інша: три колекції (`numbers`, `payment_details`, `payment_providers`) не
+описані взагалі, а в `nova_post_warehouses` бракувало двох полів. Це виправлено
+комітом `72d5075` у fillando-be.
 
 ---
 

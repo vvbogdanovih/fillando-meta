@@ -28,12 +28,23 @@
   └────┬─────┘           │ (slug, sku,      │
        │                 │  price, stock,   │
        │                 │  images, status) │
-       │                 └─────────────────┘
+       │                 └────────┬────────┘
+       │                          │
+       │                          └─► Color (ref, nullable)
+       │                                └─ color_family денормалізовано
+       │                                   на варіант заради фільтра
        │
-       ├─► Category (ref, flat)
-       │     └─ required_attributes[] (embedded)
+       ├─► Category (ref, flat) ──── 1:N ──── Landing
+       │     └─ required_attributes[] (embedded)      │ filters (закріплені)
+       │                                              │ h1/title/meta, faq[]
+       │                                              └ status: draft | active
        │
        └─► Vendor (ref)
+
+
+  ┌──────────────────┐
+  │ Color            │    (словник; hex_stops[] 1..6, family — бакет фільтра)
+  └──────────────────┘
 
 
   ┌──────────────────┐
@@ -58,12 +69,14 @@
 |------------|---------|------------|
 | `users` | Акаунти покупців та адмінів | email (unique), name, role, authMethod, phone, picture |
 | `products` | Базові товари з атрибутами | name, category_id, vendor_id, description, variant_type, attributes[] |
-| `product_variants` | Конкретні варіанти товару (SKU) | product_id, category_id, slug (unique), sku (unique), price, stock, images[], v_value, status, prom_id, prom_base_price, prom_discount_ratio, prom_discount_seen_at, price_updated_at, stock_updated_at |
+| `product_variants` | Конкретні варіанти товару (SKU) | product_id, category_id, slug (unique), sku (unique), price, stock, images[], v_value, status, color_id, color_family (денормалізовано), prom_id, prom_base_price, prom_discount_ratio, prom_discount_seen_at, price_updated_at, stock_updated_at |
 | `categories` | Категорії (плоскі, один рівень) | name (unique), slug (unique), image, order, required_attributes[] |
 | `vendors` | Виробники / бренди | name (unique), slug (unique) |
 | `carts` | Кошики користувачів | user_id (unique), items[] → { variant_id, quantity, added_at } |
 | `orders` | Замовлення | order_number (unique), user_id (nullable), customer, items[], total_price, status, delivery, payment (метод оплати обмежений методом доставки: `CASH` — `PICKUP`, `COD` — `NOVA_POST`/`COURIER`) |
 | `discount_coupons` | Знижкові купони | number (unique), code (unique), discount_percent, valid_until, is_active |
+| `colors` | Словник кольорів | name_en (unique), name_uk, slug (unique), family, hex_stops[] (1..6), order |
+| `landings` | SEO-сторінки із закріпленими фільтрами над категорією | category_id, slug (unique у межах категорії), h1, title, meta_description, intro_html, bottom_html, faq[], filters, status |
 
 ### Support
 
@@ -71,7 +84,8 @@
 |------------|---------|------------|
 | `refresh_tokens` | Refresh-токени для JWT rotation | userId, tokenHash, ipAddress, userAgent, expiresAt |
 | `payment_details` | Реквізити для оплати (IBAN) | last_name, first_name, iban (unique), edrpou, bank_name, is_available |
-| `payment_providers` | Провайдери онлайн-оплати (LiqPay / MonoPay) | name, is_active, credentials |
+| `payment_providers` | Провайдери онлайн-оплати (LiqPay / MonoPay) | provider, label, public_key, private_key_enc (AES-256-GCM, ніколи не віддається по HTTP), is_active, sandbox |
+| `numbers` | Лічильники наскрізної нумерації | sku, order, discount_coupon — **один документ**, `$inc` з upsert |
 | `wholesale_inquiries` | Заявки на оптову закупку | name, phone, email, company, message, status |
 | `nova_post_cities` | Міста НП (синхронізовані) | ref (unique), name, settlementType, area |
 | `nova_post_warehouses` | Відділення НП (синхронізовані) | ref (unique), number, cityRef, description, typeOfWarehouse |
@@ -102,4 +116,4 @@
 | Coupon Number | `DIS-` + 7-значний лічильник | `DIS-0000015` |
 | Coupon Code | 10 рандомних символів A-Z0-9 | `AB12CD34EF` |
 | Variant Slug | slugify(product.name + v_value) | `futbolka-bazova-chorna` |
-| Variant Name | `{product.name} — {v_value}` | `Футболка базова — Чорна` |
+| Variant Name | `{product.name} — {colors.name_uk}`, а без кольору — `{v_value}` | `Футболка базова — Чорна` |
