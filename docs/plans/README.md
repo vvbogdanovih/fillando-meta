@@ -17,6 +17,11 @@ so this table only lists plans that are still active.
 
 | Plan | Title | Status |
 |------|-------|--------|
-| [Plan-0002](plan-0002-catalog-seo-roadmap.md) | Catalog SEO & UX roadmap (6 phases) | Approved |
-| [Plan-0003](plan-0003-security-hardening.md) | Вразливості та воронка замовлення | Approved |
-| [Plan-0004](plan-0004-catalog-phase-1.md) | Каталог: таксономія, кольори, лендінги (Фази 0+1) | Approved |
+| [Plan-0002](plan-0002-catalog-seo-roadmap.md) | Catalog SEO & UX roadmap (6 phases) | In Progress — Фази 0 і 1 у `dev`, 2–5 не почато |
+| [Plan-0003](plan-0003-security-hardening.md) | Вразливості та воронка замовлення | In Progress — код у `dev`, не задеплоєно |
+| [Plan-0004](plan-0004-catalog-phase-1.md) | Каталог: таксономія, кольори, лендінги (Фази 0+1) | In Progress — код у `dev`, 5 міграцій не на проді |
+| [Plan-0005](plan-0005-catalog-target-state.md) | **Цільовий стан каталогу — трекер приймання** | In Progress |
+
+**Plan-0005 — це визначення готовності.** Він відповідає на питання «чи ми
+закінчили», і жоден інший план не має права називати роботу завершеною, доки
+його матриця приймання не зелена в проді. Реліз гілки — не приймання.

@@ -13,6 +13,7 @@ itself — lives here.
 | Decisions (ADR) | [`adr/`](adr/) | Architecture Decision Records — one file per significant decision and its rationale. |
 | Designs (TD) | [`designs/`](designs/) | Technical Designs — the *what & why* of a feature before it is built. |
 | Plans | [`plans/`](plans/) | Implementation plans — the *how & when* of building a specific piece of work. |
+| **Що вважається зробленим** | [`plans/plan-0005-catalog-target-state.md`](plans/plan-0005-catalog-target-state.md) | Матриця приймання цільового стану. Реліз гілки — не приймання. |
 | Runbooks | [`runbooks/`](runbooks/) | Operational guides: deployment, env template. |
 | Templates | [`templates/`](templates/) | Starting points for new FRDs, TDs, plans and ADRs. |
 | Git workflow | [`git-workflow.md`](git-workflow.md) | Branching model, commits, PR rules. |
@@ -77,5 +78,5 @@ Keep a running index of substantial documents here as they are created:
 See the full list with statuses in [`adr/README.md`](adr/README.md).
 
 ### Runbooks
-- [Backend deploy (LXC)](runbooks/deploy-backend-lxc.md) · [Frontend deploy (LXC)](runbooks/deploy-frontend-lxc.md)
+- [Backend deploy (LXC)](runbooks/deploy-backend-lxc.md) · [Frontend deploy (LXC)](runbooks/deploy-frontend-lxc.md) · [Catalogue release procedure](../repos/fillando-be/src/docs/CATALOG_RELEASE.md) (BE repo: deploy order + migrations)
 - [Env template](runbooks/env-template.env)

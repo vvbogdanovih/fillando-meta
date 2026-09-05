@@ -60,6 +60,21 @@ check_var "RESEND_API_KEY"
 check_var "SERVICE_EMAIL"
 check_var "FRONTEND_URL"
 check_var "PORT"
+check_var "PUBLIC_API_URL"
+check_var "PROM_API_KEY"
+check_var "ALLOW_EMAIL_SENDING"
+check_var "PAYMENT_ENCRYPTION_KEY"
+
+# Optional, but dangerous when present and empty: the backend validates it as
+# min 32 chars and refuses to boot on `INTERNAL_API_TOKEN=`.
+if grep -qE '^INTERNAL_API_TOKEN=' "$ENV_FILE"; then
+	if [ "${#INTERNAL_API_TOKEN}" -lt 32 ]; then
+		echo "  ✗ INTERNAL_API_TOKEN — present but shorter than 32 chars (an empty value stops the API from booting); remove the line or set a real value"
+		ERRORS=$((ERRORS + 1))
+	else
+		echo "  ✓ INTERNAL_API_TOKEN (optional)"
+	fi
+fi
 
 echo ""
 echo "=== Frontend Required Variables ==="

@@ -165,6 +165,7 @@ cd /srv/fillando-api
 openssl rand -hex 32   # → використати як JWT_SECRET
 openssl rand -hex 32   # → використати як REFRESH_JWT_SECRET
 openssl rand -hex 16   # → використати як PASSWORD_PEPPER
+openssl rand -hex 32   # → використати як PAYMENT_ENCRYPTION_KEY (мін. 32 символи; зробити бекап)
 ```
 
 ### 2.2 Створити файл
@@ -180,6 +181,8 @@ NODE_ENV=production
 PORT=4000
 LOG_LEVEL=info
 FRONTEND_URL=https://fillando.com
+# Публічна адреса API — з неї будується LiqPay server_url callback
+PUBLIC_API_URL=https://api.fillando.com
 
 # MongoDB (LAN IP вашої MongoDB VM/LXC)
 DATABASE_URL=mongodb://<USER>:<PASS>@<MONGO_LAN_IP>:27017/<DB>?authSource=admin
@@ -196,6 +199,9 @@ REFRESH_TOKEN_NAME=refresh_token
 # Password
 PASSWORD_PEPPER=<згенерований hex>
 
+# Payments — ключ шифрування секретів провайдерів у базі (мін. 32 символи)
+PAYMENT_ENCRYPTION_KEY=<згенерований hex>
+
 # Google OAuth
 GOOGLE_CLIENT_ID=<з Google Cloud Console>
 GOOGLE_CLIENT_SECRET=<з Google Cloud Console>
@@ -211,10 +217,20 @@ AWS_S3_PUBLIC_URL=https://<бакет>.s3.eu-north-1.amazonaws.com
 # Nova Post
 NOVA_POS_API_KEY=<з кабінету Нової Пошти>
 
+# Prom.ua (синхронізація цін/наявності постачальника)
+PROM_API_KEY=<з кабінету Prom>
+
+# Cron — Prom-синк у процесі; true лише на одному інстансі
+RUN_CRON=true
+
 # Email (Resend)
 RESEND_API_KEY=<з Resend dashboard>
 SERVICE_EMAIL=<email для сервісних сповіщень>
 ALLOW_EMAIL_SENDING=true
+
+# INTERNAL_API_TOKEN — опційний і поки не потрібний (фронтенд його не надсилає).
+# НЕ додавати рядок із порожнім значенням: `INTERNAL_API_TOKEN=` валить старт API
+# (валідація min 32 символи). Якщо додавати — лише повне значення (openssl rand -hex 32).
 ```
 
 ### 2.3 Захистити файл
