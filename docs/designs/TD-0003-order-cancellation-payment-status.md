@@ -1,6 +1,6 @@
 # TD-0003 — Payment status for cancelled orders (`VOIDED`)
 
-- **Status:** Approved
+- **Status:** Implemented — код Plan-0003 у `dev` обох репо з 2026-09-04; у проді ще ні, приймання за [Plan-0005](../plans/plan-0005-catalog-target-state.md)
 - **Author:** Fillando team
 - **Reviewers:** —
 - **Date:** 2026-08-19

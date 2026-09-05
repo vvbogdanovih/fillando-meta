@@ -1,3 +1,12 @@
+## 05/09
+- Built the colour dictionary as a table.
+- Showed how many variants each colour uses.
+- Built the landings table with content status.
+- Blocked publishing a landing matching nothing.
+- Matched the storefront to the catalogue design.
+- Wired the refill to its spooled twin.
+- Fixed nine defects found by review.
+
 ## 20/08
 - Confirmed the vendor pricing formula against Prom.
 - Corrected 174 overstated prices on dev.
