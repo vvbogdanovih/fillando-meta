@@ -78,5 +78,7 @@ Keep a running index of substantial documents here as they are created:
 See the full list with statuses in [`adr/README.md`](adr/README.md).
 
 ### Runbooks
+
+- [Локальна MongoDB](runbooks/local-mongodb.md) — Docker Compose, дані в папці backend, backup/restore та діагностика.
 - [Railway deployment](runbooks/deploy-railway.md) · Legacy: [Backend deploy (LXC)](runbooks/deploy-backend-lxc.md) · [Frontend deploy (LXC)](runbooks/deploy-frontend-lxc.md) · [Catalogue release procedure](../repos/fillando-be/src/docs/CATALOG_RELEASE.md) (BE repo: deploy order + migrations)
 - [Env template](runbooks/env-template.env)
