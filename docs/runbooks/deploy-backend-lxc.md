@@ -1,3 +1,6 @@
+> Legacy reference: the SSH workflows and production Compose files were removed.
+> Use [Railway deployment](deploy-railway.md) for the new hosting.
+
 # Deploy Backend — LXC + Nginx Proxy Manager + GitHub Actions CI/CD
 
 ## Архітектура

@@ -9,7 +9,7 @@
 | Environment | Purpose | Branch | Notes |
 |-------------|---------|--------|-------|
 | **local** | Developer machines. | `dev` / feature | Backend `yarn start:dev` (hot reload); frontend `yarn dev` on port 9000. |
-| **production** | Live system. | `main` | Deployed on LXC behind Nginx Proxy Manager via GitHub Actions CI/CD — see [runbooks](runbooks/). |
+| **production** | Live system. | `main` | Target: Railway with MongoDB Atlas; cutover pending — see [Railway runbook](runbooks/deploy-railway.md). |
 
 > There is no dedicated staging tier today. If one is added, mirror production
 > and record it here and in the runbooks.
@@ -17,7 +17,7 @@
 ## API prefix
 
 The backend exposes routes **without** a global prefix (`/auth/login`, not
-`/api/auth/login`). The `/api` prefix is added **only by Nginx** on production.
+`/api/auth/login`). The old Nginx deployment could add `/api`; Railway serves the backend directly without that prefix.
 Keep local clients pointed at the un-prefixed backend and set
 `NEXT_PUBLIC_API_BASE_URL` accordingly per environment.
 
