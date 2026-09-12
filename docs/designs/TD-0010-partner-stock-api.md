@@ -40,7 +40,7 @@ Status: Implemented locally (2026-09-12); deployment pending.
   клієнтів, перевіряється сервером. Це не авторизаційний секрет і не snapshot.
 - POST `/partner/v1/products/lookup`: до 100 артикулів, `{items, not_found}`.
   Публічний allowlist: назва, HTML, категорія, характеристики, ознака варіанта,
-  фото, URL, вага та наявність. Без цін і даних постачальника.
+  фото, URL, вага та наявність. Роздрібна ціна `price` у гривнях та `currency: UAH`; без даних постачальника.
 - PartnerCatalogRepository має спільний join для лічильників, SKU й lookup:
   active, наявний Product і Category, збіг category_id товару й варіанта.
   Непов'язані записи не дають розбіжностей між лічильником і каталогом.
