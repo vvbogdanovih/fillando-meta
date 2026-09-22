@@ -1554,9 +1554,18 @@ B2B-канал для оптових закупок та індивідуаль�
 ## 24. Google Merchant: фід і structured data
 
 Джерело дизайну — [TD-0006](../designs/TD-0006-google-merchant-feed-and-structured-data.md),
-реалізація — [Plan-0006](../plans/plan-0006-google-merchant.md). Код у `dev` з 2026-09-06;
-у проді — після релізу (Plan-0005, блок A). Кабінети Google (Search Console, Merchant Center,
-GA4, Ads) налаштовує власник після релізу й міграцій.
+реалізація — [Plan-0006](../plans/plan-0006-google-merchant.md).
+
+Стан на 2026-09-22 (перевірено на проді, не зі статусу плану):
+
+- **фід у проді** — `https://api.fillando.com/feeds/google-shopping.xml` віддає 301 позицію,
+  `google_product_category = 499682` на всіх, `lastBuildDate` рухається щогодини;
+- **Merchant Center читає саме його** — назви позицій у звіті Google Ads збігаються з `title`
+  фіда символ у символ;
+- **GA4 не підключений**: у прод-білді фронту `NEXT_PUBLIC_GOOGLE_ANALYTICS_ID` порожній, тож
+  усі події §24.3 — no-op. Це блокує аудиторії ремаркетингу й сигнали для PMax;
+- **Search Console** не верифікований meta-тегом (`NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` теж
+  порожній); верифікація через DNS або файл із коду не видна.
 
 ### 24.1 Google Shopping фід
 
@@ -1568,15 +1577,31 @@ GA4, Ads) налаштовує власник після релізу й міг�
 | **Оновлення** | генерація при старті процесу та щогодини (`RUN_CRON`); XML в пам'яті |
 | **Холодний старт** | до першої генерації — `503` + `Retry-After: 60`, ніколи не порожній канал |
 
-Позиції — лише `active` варіанти. Поля: `g:id` (SKU), `g:item_group_id` (товар), `title`,
-`description` (текст без розмітки, ≤5000), `link`, `g:image_link` + до 10 `g:additional_image_link`
-(оригінальні URL — ті самі, що в JSON-LD), `g:availability` (`in_stock` / `out_of_stock`),
-`g:price` (UAH), `g:brand` (атрибут «Виробник»), `g:google_product_category` (з категорії),
-`g:product_type` («Категорія > H1 лендінга» для найспецифічнішого опублікованого лендінга, інакше
-назва категорії), `g:condition new`, `g:identifier_exists false`, `g:color` (словник), `g:material`
-(`polymer`), `g:shipping_weight`, `g:custom_label_0..4` (категорія · виробник · глибина залишку ·
-ціновий діапазон · швидкість продажів за 90 днів PAID-замовлень). **Маржі й supplier-полів у
-фіді немає.**
+Позиції — лише `active` варіанти. Поля: `g:id` (SKU), `g:item_group_id` (товар), `title`
+(складається — див. нижче), `description` (текст без розмітки, ≤5000), `link`, `g:image_link` + до
+10 `g:additional_image_link` (оригінальні URL — ті самі, що в JSON-LD), `g:availability`
+(`in_stock` / `out_of_stock`), `g:price` (UAH), `g:brand` (атрибут «Виробник»),
+`g:google_product_category` (з категорії), `g:product_type` («Категорія > H1 лендінга» для
+найспецифічнішого опублікованого лендінга, інакше назва категорії), `g:condition new`,
+`g:identifier_exists false`, `g:color` (словник), `g:material` (`polymer`), `g:shipping_weight`,
+`g:product_highlight` (по одному на збережену характеристику: діаметр, вага, `polymer`, `finish`,
+`reinforcement`, `series`, `spool_included` — бренд, колір і legacy-«Матеріал» не дублюються),
+`g:custom_label_0..4` (тип філаменту · виробник · глибина залишку · ціновий діапазон · швидкість
+продажів за 90 днів PAID-замовлень). **Маржі й supplier-полів у фіді немає.**
+
+**`title` = `{Категорія} {тип} {бренд} {діаметр} {вага} — {колір}`** — «Філамент PLA Silk Kingroon
+1.75 мм 1 кг — Золотий» (з 2026-09-22). Раніше це була збережена назва варіанта, у якій немає
+жодного зі слів, які шукають: ні «філамент», ні діаметра, ні ваги, а колір наполовину англійською
+(аудит акаунта Google Ads 21.09.2026 — 43 символи зі 150 дозволених). «Тип» — назва товару без
+бренду-префікса, бо лише в назві написані «Silk», «High Speed», «(еко-пакування)» чи «для AMS»;
+частина, яку назва вже містить, не повторюється. Одиниці («мм», «кг») беруться з
+`Category.required_attributes[].unit`, колір — `colors.name_uk` без англійської в дужках.
+
+**`custom_label_0` — сімейство**: `basic` (звичайні PLA/PETG) · `decorative` (є `finish`) ·
+`engineering` (є `reinforcement`, або `polymer` ∈ ABS, ASA, PA*, PC, PET, PPA, PPS) · `flex` (TPU).
+Раніше там лежала назва категорії — одне й те саме слово на всіх позиціях, поки магазин продає одну
+категорію, тож Shopping не мав за чим сегментувати. Після першого фетчу нового фіда групу товарів,
+розбиту за старим значенням, треба перерозбити за сімействами.
 
 Виключення (позиції немає): без фото, без ціни, без атрибута «Виробник», зникли товар або
 категорія. Попередження (позиція є, лістинг гірший): немає `google_product_category`, опису,
