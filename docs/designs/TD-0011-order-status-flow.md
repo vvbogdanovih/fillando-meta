@@ -82,8 +82,10 @@
 
 **Функціональні**
 - F1. Статуси: `NEW`, `CONFIRMED`, `SHIPPED`, `DELIVERED`, `COMPLETED`, `RETURNING`, `RETURNED`, `CANCELLED`.
-- F2. Внесення ТТН для `NOVA_POST`/`COURIER` у `NEW`/`CONFIRMED` → `SHIPPED`. Для `PICKUP` і для
-  інших статусів ТТН статус не змінює.
+- F2. Внесення ТТН у `NEW`/`PROCESSING`/`CONFIRMED` → `SHIPPED` **для будь-якого способу
+  доставки**. Для інших статусів ТТН статус не змінює. *(Уточнено 2026-10-04: початково `PICKUP`
+  був винятком, але в проді 23 з 39 «самовивозів» мають ТТН — оптовий покупець за рахунком, якого
+  власник відправляє Новою Поштою; виняток лишав їх без трекера і без автозакриття.)*
 - F3. Інваріант: `order_status ∈ {DELIVERED, COMPLETED}` ⇒ `COMPLETED` тоді й лише тоді, коли
   `payment_status = PAID`. Перевіряється після **кожного** запису будь-якого зі статусів.
 - F4. Трекер: «отримано» → `DELIVERED` (далі F3); «відмова/припинено зберігання» → `RETURNING` + лист.
@@ -284,7 +286,7 @@ sequenceDiagram
 - **Migration / compatibility** (Railway, гілка `production`):
   - **Фаза 1** — код, що читає `PROCESSING` (enum ще містить значення, позначене deprecated),
     але не дозволяє в нього переходів. Скрипт міграції (ідемпотентний, впорядкований, без транзакцій):
-    1. `{ order_status: { $in: [NEW, CONFIRMED, PROCESSING] }, delivery_method: { $ne: PICKUP }, nova_post_ttn: { $nin: [null, ''] } }` → `SHIPPED`;
+    1. `{ order_status: { $in: [NEW, CONFIRMED, PROCESSING] }, nova_post_ttn: { $nin: [null, ''] } }` → `SHIPPED` (без фільтра за способом доставки, див. F2);
     2. решта `PROCESSING` → `CONFIRMED`;
     3. `DELIVERED` + `PAID` → `COMPLETED`; `COMPLETED` без `PAID` → `DELIVERED`
        (останнє — лише звіт у лог для ручного розбору; автоматично не міняємо);
