@@ -240,8 +240,14 @@ Fillando — повноцінний e-commerce додаток для прода�
 (`{ family, count, hex_stops }`), з якого вітрина малює swatch-кружечки. Опції
 рахуються по всій категорії, тож вибір одного кольору не ховає решту.
 
+**Акції в каталозі ([TD-0012](../designs/TD-0012-variant-promotions.md)):** кожна позиція несе
+`price` (регулярна) і трійку `sale_price` / `promo_percent` / `promo_ends_at` (усі `null` поза
+активною акцією). Фільтр за ціною, сортування за ціною, межі слайдера й лічильники фасетів
+рахуються по **ефективній** ціні (`sale_price ?? price`). Картка показує плашку «−N %» над фото,
+закреслену регулярну ціну й акційну (`PriceTag`).
+
 **Бізнес-логіка:**
-- Агрегація MongoDB: match (category, status=active, ціна, атрибути) → facet (items + total)
+- Агрегація MongoDB: match (category, status=active, атрибути) → `_effective_price` → фільтр ціни → facet (items + total)
 - Атрибутні фільтри: OR всередині одного атрибута, AND між різними
 - Фронтенд: бічна панель з фільтрами (слайдер ціни, мультиселекти), пагінація через URL
 
@@ -329,12 +335,12 @@ Fillando — повноцінний e-commerce додаток для прода�
 **Відповідь:**
 ```json
 {
-  "variant": { "id", "name", "slug", "sku", "price", "price_updated_at", "stock", "images", "v_value", "status", "color", "weight_g" },
+  "variant": { "id", "name", "slug", "sku", "price", "price_updated_at", "stock", "images", "v_value", "status", "color", "weight_g", "sale_price", "promo_percent", "promo_ends_at" },
   "product": { "id", "name", "description", "variant_type", "attributes", "manufacturer" },
   "siblings": [ { /* той самий публічний allowlist, лише active */ } ],
   "category_slug": "…",
   "category_name": "…",
-  "spooled_counterpart": { "slug", "name", "price", "matched_colour" } | null
+  "spooled_counterpart": { "slug", "name", "price", "sale_price", "matched_colour" } | null
 }
 ```
 
@@ -347,7 +353,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 - Чип виробника над назвою (з `product.manufacturer`; без атрибута чипа немає)
 - Назва товару з варіантом (якщо є)
 - Бейдж наявності (в наявності / немає / мало залишилось / **знято з продажу**)
-- Ціна в ₴ (UAH)
+- Ціна в ₴ (UAH) через `PriceTag`: ефективна ціна, а при акції — поруч закреслена регулярна, плашка «−N %» і рядок «Акція до dd.mm» ([TD-0012](../designs/TD-0012-variant-promotions.md)). Архівний варіант показує лише одну перекреслену ціну без акції
 - SKU
 - Перемикач варіанту: swatch-ряд, коли кожен варіант має колір зі словника, інакше dropdown
 - Вибір кількості (+/- кнопки з валідацією по стоку)
@@ -355,13 +361,13 @@ Fillando — повноцінний e-commerce додаток для прода�
 - **Блок доставки:** «Нова Пошта — орієнтовно ₴N, 1–3 дні» з підписом «розраховано за вагою N кг, відділення–відділення по Україні». Сума — з таблиці ставок `SHIPPING_RATE_TABLE` (`fillando-fe/src/common/utils/shipping.utils.ts`: дві сходинки ≤2 кг / ≤10 кг × дві зони, числа знімає `fillando-be/scripts/shipping-rates.js` з API Нової Пошти за договором магазину). Без `weight_g` суми немає — лише «за тарифом перевізника»
 - Опис товару (rich HTML)
 - Курована таблиця характеристик (фіксований порядок вимірів, значення варіанта з обраної осі)
-- Product schema (JSON-LD) — єдиний автор `buildProductJsonLd` (`products/[slug]/product-jsonld.utils.ts`): `sku`, `brand` (з `manufacturer`, без фолбеку на назву магазину), `inProductGroupWithID` (= id товару, лише при ≥2 siblings), `color` (словник), `material` (атрибут `polymer`), `weight` і `offers.shippingDetails` (з `weight_g`), `offers.url`, `priceValidUntil` (+90 днів), `itemCondition: NewCondition`, `availability` (`InStock` / `OutOfStock` / `Discontinued` для архівного), `hasMerchantReturnPolicy` (14 днів, зворотна пересилка коштом покупця, дефектний товар — `itemDefectReturnFees: FreeReturn`). Кожне поле деградує відсутністю, не заглушкою
+- Product schema (JSON-LD) — єдиний автор `buildProductJsonLd` (`products/[slug]/product-jsonld.utils.ts`): `sku`, `brand` (з `manufacturer`, без фолбеку на назву магазину), `inProductGroupWithID` (= id товару, лише при ≥2 siblings), `color` (словник), `material` (атрибут `polymer`), `weight` і `offers.shippingDetails` (з `weight_g`), `offers.url`, `offers.price` = ефективна ціна, при акції `priceSpecification` з `priceType: ListPrice` = регулярна, `priceValidUntil` (= `promo_ends_at` при акції з датою, інакше +90 днів від серіалізованого часу серверного рендера); JSON-LD і видима ціна використовують один серверний snapshot, без повторної перевірки акції годинником браузера, `itemCondition: NewCondition`, `availability` (`InStock` / `OutOfStock` / `Discontinued` для архівного), `hasMerchantReturnPolicy` (14 днів, зворотна пересилка коштом покупця, дефектний товар — `itemDefectReturnFees: FreeReturn`). Кожне поле деградує відсутністю, не заглушкою
 
 **Поведінка:**
 - Якщо товар вже в кошику — кнопка показує "В кошику" з галочкою
 - Валідація кількості по доступному стоку (підказка при перевищенні)
 - **Архівний товар** (`status = archived`): сірий пілл «Знято з продажу», знебарвлене фото, перекреслена ціна, вимкнена кнопка, без перемикача варіантів, блок «Ми його більше не возимо» з посиланням на категорію; `robots: noindex, follow`; у sitemap і фід не потрапляє. Живий беклінк або реклама не ведуть у 404
-- GA4: `view_item` при відкритті/перемиканні варіанта, `add_to_cart` після успішного додавання (§24)
+- GA4: `view_item` при відкритті/перемиканні варіанта, `add_to_cart` після успішного додавання (§24); в обох — ефективна ціна
 
 ---
 
@@ -467,11 +473,11 @@ Fillando — повноцінний e-commerce додаток для прода�
 2. Валідація адреси доставки відповідно до методу та сумісності пари «метод оплати ↔ метод доставки» (`COD` — тільки `NOVA_POST` / `COURIER`)
 3. Валідація купона (якщо вказано):
    - Пошук за кодом → перевірка `is_active` та `valid_until`
-   - Розрахунок: `discount_amount = subtotal * discount_percent / 100`
+   - Купон **не діє на акційні рядки** (TD-0012): `discount_amount = Σ(рядки без активної акції) × discount_percent / 100`. Якщо всі рядки акційні — `400 COUPON_NOT_APPLICABLE` (одноразовий купон не спалюється на нуль). Чекаут показує те саме превʼю і пояснює одним рядком під полем купона
    - Після створення замовлення: `used_count` купона +1; одноразовий купон (`is_reusable: false`) деактивується, багаторазовий лишається активним
 4. Розрахунок: `total_price = subtotal - discount_amount`
 5. Генерація `order_number`: `"FO-"` + 7-значний лічильник (напр., `FO-0000001`)
-6. Створення snapshot товарів (ціна, назва, SKU на момент замовлення)
+6. Створення snapshot товарів (ціна, назва, SKU на момент замовлення). `items[].price` — ціна, яку платить покупець (акційна, якщо акція діє), `items[].list_price` — регулярна, `items[].promo_percent` — відсоток акції або `null`
 7. Відправка email підтвердження (для `IBAN`, `CASH` та `COD` — кожен зі своїм шаблоном). Для `LIQPAY` лист-підтвердження надсилається не одразу, а після успішної оплати (з callback).
 
 ### 7.3 Сторінка успіху та стани оплати
@@ -850,7 +856,18 @@ HTML → Puppeteer → binary stream. Три розділи:
 | `PATCH` | `/products/{id}/variants/{variantId}` | Оновити варіант |
 | `DELETE` | `/products/{id}/variants/{variantId}` | Видалити варіант |
 | `PATCH` | `/products/{id}/variants/{variantId}/images` | Замінити зображення варіанту |
+| `PATCH` | `/products/{id}/promotion` | Акція на всі варіанти: `{ promo_percent, promo_ends_at? }` або `{ promo_percent: null }` (TD-0012) |
 | `DELETE` | `/products/{id}` | Видалити товар (з усіма варіантами) |
+
+**Акція ([TD-0012](../designs/TD-0012-variant-promotions.md)):** картка «Акція» на сторінці
+редагування ставить або прибирає відсоток (1–90) і необов'язкову дату «до» на всі варіанти
+товару одним запитом; у модалці варіанта ті самі два поля для одного варіанта (порожній відсоток =
+акції немає; дата без відсотка ігнорується). Таблиця варіантів показує закреслену регулярну ціну,
+акційну й плашку «−N %». Адмінські відповіді варіантів несуть `supplier_price` (що магазин платить
+постачальнику); якщо акційна ціна нижча — амбер-попередження з переліком SKU, збереження не
+блокується. Акційна ціна **не зберігається** — виводиться з відсотка при кожному читанні, тож
+Prom-синк, який перезаписує `price`, її не зачіпає. Запис акції одразу оновлює вітрину і
+перегенеровує Google-фід; акція, що закінчилася за датою, підхоплюється кроном раз на 10 хв. Налаштований непрострочений відсоток зберігається в модалці навіть за нульової ціни або округлення без економії — зміна ціни може зробити акцію активною. Прострочену акцію в поля не підставляють.
 
 ### 10.4 Допоміжні endpoints
 
@@ -1342,7 +1359,9 @@ SEO-сторінки із закріпленими фільтрами над к�
 | `name` | string | required |
 | `slug` | string | unique, required |
 | `sku` | string | unique, required |
-| `price` | number | required |
+| `price` | number | required — регулярна ціна; перезаписується Prom-синком |
+| `promo_percent` | number | nullable — акція магазину, ціле 1–90 (TD-0012). `sale_price` не зберігається: `floor(price × (1 − p/100) + 0.5)` при читанні; якщо результат ≥ `price` або 0 — акції немає |
+| `promo_ends_at` | Date | nullable — кінець акції; `null` = безстрокова; прострочена читається як «немає» |
 | `stock` | number | default: 0 |
 | `images` | string[] | — |
 | `v_value` | string | default: null |
@@ -1379,10 +1398,10 @@ SEO-сторінки із закріпленими фільтрами над к�
 | `order_number` | string | unique, regex `FO-\d{7}` |
 | `user_id` | ObjectId → User | nullable (гостьове замовлення) |
 | `customer` | embedded | `{ name, phone, email }` |
-| `items` | array | `[{ variant_id, product_id, name, sku, vendor_sku, price, quantity, image }]` |
+| `items` | array | `[{ variant_id, product_id, name, sku, vendor_sku, price, list_price, promo_percent, quantity, image }]` — `price` ефективна, `list_price` регулярна на момент замовлення (TD-0012) |
 | `total_price` | number | required |
 | `subtotal_price` | number | required |
-| `applied_discount` | embedded | `{ coupon_id, code, discount_percent, discount_amount }` nullable |
+| `applied_discount` | embedded | `{ coupon_id, code, discount_percent, discount_amount }` nullable — `discount_amount` рахується лише від рядків без акції |
 | `manual_discount` | embedded | `{ amount, reason, applied_at }` nullable — знижка магазину в ₴, лише до оплати |
 | `payment_method` | enum | `CASH` / `IBAN` / `LIQPAY` / `MONOPAY` / `COD` (тільки з `NOVA_POST` / `COURIER`) |
 | `payment_status` | enum | `PENDING` / `PAID` / `FAILED` / `REFUNDED` / `VOIDED` |
@@ -1662,7 +1681,7 @@ B2B-канал для оптових закупок та індивідуаль�
 Позиції — лише `active` варіанти. Поля: `g:id` (SKU), `g:item_group_id` (товар), `title`
 (складається — див. нижче), `description` (текст без розмітки, ≤5000), `link`, `g:image_link` + до
 10 `g:additional_image_link` (оригінальні URL — ті самі, що в JSON-LD), `g:availability`
-(`in_stock` / `out_of_stock`), `g:price` (UAH), `g:brand` (атрибут «Виробник»),
+(`in_stock` / `out_of_stock`), `g:price` (UAH, регулярна), при активній акції `g:sale_price` і — за наявності дати — `g:sale_price_effective_date` (`<генерація>/<promo_ends_at>`, TD-0012), `g:brand` (атрибут «Виробник»),
 `g:google_product_category` (з категорії), `g:product_type` («Категорія > H1 лендінга» для
 найспецифічнішого опублікованого лендінга, інакше назва категорії), `g:condition new`,
 `g:identifier_exists false`, `g:color` (словник), `g:material` (`polymer`), `g:shipping_weight`,
@@ -1724,7 +1743,7 @@ B2B-канал для оптових закупок та індивідуаль�
   курсорна пагінація по SKU, limit 1–100; `{items, next_cursor}`.
 - `POST /partner/v1/products/lookup`: картки до 100 артикулів, `{items, not_found}`;
   назва, HTML-опис, категорія, характеристики, варіант, фото, URL, вага та наявність.
-  Роздрібна ціна `price` у гривнях та `currency: UAH`; без даних постачальника. Критерії доступності однакові з лічильниками й SKU.
+  Роздрібна ціна `price` у гривнях, `sale_price` (акційна, якщо акція магазину зараз діє, інакше `null`; TD-0012) та `currency: UAH`; без даних постачальника. Критерії доступності однакові з лічильниками й SKU.
 
 - `POST /partner/v1/products/availability` — пакет із 1–100 артикулів;
   `{items, not_found}`, повтори об’єднуються, порядок першої появи зберігається.

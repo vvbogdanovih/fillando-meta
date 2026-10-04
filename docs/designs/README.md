@@ -25,3 +25,4 @@ how a TD differs from a plan.
 | [TD-0009](TD-0009-customer-payment-method-change.md) | Зміна способу оплати клієнтом і доплата LiqPay-замовлення | Approved (2026-09-06) — рецензія [TD-0009-review.md](TD-0009-review.md); реалізація — [Plan-0008](../plans/plan-0008-payment-method-change.md) |
 | [TD-0010](TD-0010-partner-stock-api.md) | Партнерський API наявності та API-токени | Implemented locally — deployment pending |
 | [TD-0011](TD-0011-order-status-flow.md) | Спрощений життєвий цикл замовлення: статуси рухають факти | Implemented locally (2026-10-03) — не закомічено, міграція не прогнана |
+| [TD-0012](TD-0012-variant-promotions.md) | Акції на товари та варіанти (відсоткова знижка): `sale_price` виводиться, фід і JSON-LD віддають пару цін | Implemented locally (2026-10-04) — не закомічено |
