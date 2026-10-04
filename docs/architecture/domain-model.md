@@ -17,6 +17,7 @@
        │                          │ customer (snapshot)
        │                          │ delivery_address (embedded)
        │                          │ applied_discount (embedded)
+       │                          │ manual_discount (embedded, optional)
        │                          └─► DiscountCoupon (ref, optional)
        │
        └──────────────── 1:N ──── RefreshToken
@@ -102,6 +103,7 @@
 | **Embedded** | customer in Order | Snapshot контактів, незалежний від User |
 | **Embedded** | delivery_address in Order | Одноразове використання |
 | **Embedded** | applied_discount in Order | Snapshot купона на момент замовлення |
+| **Embedded** | manual_discount in Order | Знижка магазину в ₴ (`amount`, `reason`, `applied_at`), задається адміном до оплати |
 | **Referenced** | ProductVariant → Product | Варіантів може бути багато, запитуються окремо (каталог) |
 | **Referenced** | Product → Category, Vendor | Спільні сутності, змінюються окремо |
 | **Referenced** | Cart.items → ProductVariant | Потрібна актуальна ціна/стік при кожному запиті |

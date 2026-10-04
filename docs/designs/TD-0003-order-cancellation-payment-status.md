@@ -35,7 +35,7 @@ A cancelled order still displays «Очікує оплату». `order_status` a
 
 ## 4. Requirements
 
-- **Functional:** FRD §8 (customer order pages), §9 (admin orders, status filters, invoice, reports), §18.8 (order data model). The rule is normative in [state-machines](../architecture/state-machines.md#крос-машинне-правило-скасування-замовлення).
+- **Functional:** FRD §8 (customer order pages), §9 (admin orders, status filters, invoice, reports), §18.8 (order data model). The rule is normative in [state-machines](../architecture/state-machines.md#крос-машинне-правило-скасування-або-повернення).
 - **Non-functional:** no data loss for money actually received; additive enum change deployable without downtime; UK locale label «Скасовано»; existing records backfilled.
 
 ## 5. Proposed design
