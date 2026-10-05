@@ -473,7 +473,7 @@ Fillando — повноцінний e-commerce додаток для прода�
 2. Валідація адреси доставки відповідно до методу та сумісності пари «метод оплати ↔ метод доставки» (`COD` — тільки `NOVA_POST` / `COURIER`)
 3. Валідація купона (якщо вказано):
    - Пошук за кодом → перевірка `is_active` та `valid_until`
-   - Купон **не діє на акційні рядки** (TD-0012): `discount_amount = Σ(рядки без активної акції) × discount_percent / 100`. Якщо всі рядки акційні — `400 COUPON_NOT_APPLICABLE` (одноразовий купон не спалюється на нуль). Чекаут показує те саме превʼю і пояснює одним рядком під полем купона
+   - Купон **не складається з акцією — на кожному рядку діє більша зі знижок, обидві від регулярної ціни** (TD-0012, переглянуто власником 2026-10-05). Для рядка: `extra = max(0, list_price × qty × discount_percent / 100 − (list_price − price) × qty)`, `discount_amount = round2(Σ extra)`. Неакційний рядок дає повний відсоток купона; акція −10 % з купоном −15 % дає рівно 15 % від регулярної ціни (купон додає 5 %, яких не дала акція); купон не більший за акцію на цей рядок нічого не додає — рядок лишається за акційною ціною. `items[].price` і `subtotal_price` зберігають акційні ціни, купон лишається знижкою рівня замовлення. Якщо сума = 0 (усі рядки на акції з не меншою знижкою) — `400 COUPON_NOT_APPLICABLE` (одноразовий купон не спалюється на нуль). Чекаут показує те саме превʼю (`couponDiscountAmount` у `price.utils.ts`, дзеркало `coupon-pricing.ts` на BE) і пояснює під полем купона, на які акційні рядки купон діє, а які лишаються за акцією
    - Після створення замовлення: `used_count` купона +1; одноразовий купон (`is_reusable: false`) деактивується, багаторазовий лишається активним
 4. Розрахунок: `total_price = subtotal - discount_amount`
 5. Генерація `order_number`: `"FO-"` + 7-значний лічильник (напр., `FO-0000001`)
@@ -579,6 +579,8 @@ callback LiqPay; lookup лише читає його. Деталі — `fillando
 
 **Фільтри:** `order_status`, `payment_status`, `page`, `limit` (10/20/50/100)
 
+**Колонки таблиці `/admin/orders`:** №, дата, одержувач, сума, статус, оплата, ТТН (`nova_post_ttn`, якщо вже є; інакше «—»), перший товар. Рядок веде на деталі замовлення.
+
 ### 9.2 Деталі та редагування
 
 | Endpoint | Опис |
@@ -655,7 +657,7 @@ NEW / PROCESSING / CONFIRMED ─► CANCELLED ─ «Відновити» ─► 
 
 - `items` — це **повна заміна** списку товарів: адмін може змінити кількість і **видалити товар**, не передавши його у масиві
 - Кожен елемент: `variant_id` (MongoId) + `quantity` (≥ 1); перевіряється наявність варіанта та достатній `stock`
-- `subtotal_price` та `total_price` перераховуються сервером; якщо до замовлення застосований купон — `discount_amount` перераховується від нового `subtotal_price`
+- `subtotal_price` та `total_price` перераховуються сервером; якщо до замовлення застосований купон — `discount_amount` перераховується за тим самим правилом, що й при оформленні (більша зі знижок на кожному новому рядку, див. 7.2), без відмови: якщо купону нема що додати, він дає 0
 - Порожній масив `items: []` заборонений (400) — замовлення не може залишитись без товарів
 - Ручна знижка (`manual_discount`) зберігається й віднімається після купона: `total_price = subtotal_price − discount_amount − manual_discount.amount`
 
@@ -1404,7 +1406,7 @@ SEO-сторінки із закріпленими фільтрами над к�
 | `items` | array | `[{ variant_id, product_id, name, sku, vendor_sku, price, list_price, promo_percent, quantity, image }]` — `price` ефективна, `list_price` регулярна на момент замовлення (TD-0012) |
 | `total_price` | number | required |
 | `subtotal_price` | number | required |
-| `applied_discount` | embedded | `{ coupon_id, code, discount_percent, discount_amount }` nullable — `discount_amount` рахується лише від рядків без акції |
+| `applied_discount` | embedded | `{ coupon_id, code, discount_percent, discount_amount }` nullable — `discount_amount` = те, що купон додає понад акції рядків (на кожному рядку діє більша зі знижок від `list_price`, див. 7.2) |
 | `manual_discount` | embedded | `{ amount, reason, applied_at }` nullable — знижка магазину в ₴, лише до оплати |
 | `payment_method` | enum | `CASH` / `IBAN` / `LIQPAY` / `MONOPAY` / `COD` (тільки з `NOVA_POST` / `COURIER`) |
 | `payment_status` | enum | `PENDING` / `PAID` / `FAILED` / `REFUNDED` / `VOIDED` |
