@@ -6,7 +6,8 @@ Status: configuration prepared; live deployment and domain cutover are separate 
 
 Connect the separate GitHub repositories `fillando-be` and `fillando-fe` as two
 services in one Railway project. Do not connect `fillando-meta`: its `repos/`
-directory is ignored by Git. Select the release branch (`main`) and root `/`.
+directory is ignored by Git. Select the release branch (`production` — the deploy branch of both
+repositories, owner 2026-10-28) and root `/`.
 Both repositories have a root `Dockerfile`; let its build and CMD control the service.
 The old SSH workflows and production Compose files have been removed.
 

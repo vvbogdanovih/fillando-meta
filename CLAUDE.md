@@ -34,6 +34,7 @@ fillando-meta/                ← мета-репо (цей git)
 │   ├── adr/                  ← Architecture Decision Records (0001+)
 │   ├── designs/              ← Technical Designs (TD)
 │   ├── plans/                ← implementation plans
+│   ├── reports/              ← PDF плану й звіту Plan-0010 і плану дня релізу (генеруються, див. README там)
 │   ├── runbooks/             ← deploy-гайди + env-template.env
 │   ├── templates/            ← шаблони FRD / TD / plan / ADR
 │   ├── git-workflow.md       ← branching, commits, PR
@@ -45,7 +46,12 @@ fillando-meta/                ← мета-репо (цей git)
 │   ├── checkout-all.sh       ← перемикання на branch з manifest
 │   ├── status-all.sh         ← branch / sync / dirty статус
 │   ├── sync-env.sh           ← розподіл .env по child repos
-│   └── validate-env.sh       ← перевірка env credentials
+│   ├── validate-env.sh       ← перевірка env credentials
+│   ├── catalog-release.mjs   ← реліз каталогу v2 однією командою (бекап → міграція → перевірки → кеш → адмінка)
+│   ├── catalog-rehearsal/    ← read-only зонди репетиції/релізу каталогу (Plan-0010 R01, D08)
+│   ├── export-plan-pdf.py    ← генератор docs/reports/fillando-implementation-plan.pdf
+│   ├── export-release-day-pdf.py ← генератор docs/reports/fillando-release-day.pdf (з рунбука релізу)
+│   └── pdf-requirements.txt  ← залежності генератора PDF (venv)
 └── repos/                    ← [gitignored] child repos
     ├── fillando-be/          ← backend repo
     └── fillando-fe/          ← frontend repo
@@ -54,6 +60,17 @@ fillando-meta/                ← мета-репо (цей git)
 ---
 
 ## Documentation Hierarchy
+
+### PDF-супровід Plan-0010
+
+За побажанням власника (2026-10-23), при зміні Plan-0010 або його звіту M0
+оновлювати також `docs/reports/fillando-implementation-plan.pdf` через
+`scripts/export-plan-pdf.py`. Markdown є джерелом правди; PDF містить план і звіт
+виконання. Не підтримувати статуси вручну у двох місцях. Інструкція експорту —
+`docs/reports/README.md`. Початковий proposal PDF залишається історичною концепцією.
+У переліку завдань підтримувати явні статуси: виконано (із межами), у роботі,
+частково виконано, заплановано. Генератор відображає їх кольоровими позначками
+з текстом і зведенням; змінювати статуси разом із фактичним прогресом.
 
 Документація організована за пріоритетом (повний індекс — `docs/README.md`):
 

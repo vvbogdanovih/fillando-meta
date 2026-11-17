@@ -1,5 +1,18 @@
 # Domain Model
 
+## Additive перехід Plan-0010 (локально, 24.10.2026)
+
+Category.presentation прибрано 05.11.2026 (рішення власника): порядок і видимість рядків таблиці —
+у визначеннях характеристик (order, visible_in_specs), попередження перед покупкою — поле товару
+purchase_notice, бренд і матеріал — semantic brand/material визначення. Початкові variant slug зберігаються при rename.
+Staging додає parent_id=null, kind=product, contract version=1,
+attribute_definitions і product.attributes_v2, не активуючи v2.
+Дерево довільної глибини вже має read API; write API та повна модель переходу
+залишаються в [TD-0013](../designs/TD-0013-general-catalog-and-seo.md). (Оновлено 31.10: ADMIN HTTP для
+створення/переміщення/видалення/конвертації/публікації, `catalog_routes`, `storefront_settings` і `relations`
+реалізовано локально; `relations` прибрано 04.11.2026 за рішенням власника — [TD-0013 API transition](../designs/TD-0013-api-transition.md); перервану операцію
+відновлює операторський CLI — [TD-0013 catalog mutations](../designs/TD-0013-catalog-mutations.md).)
+
 ## Entity Relationship Diagram
 
 ```
@@ -119,3 +132,18 @@
 | Coupon Code | 10 рандомних символів A-Z0-9 | `AB12CD34EF` |
 | Variant Slug | slugify(product.name + v_value) | `futbolka-bazova-chorna` |
 | Variant Name | `{product.name} — {colors.name_uk}`, а без кольору — `{v_value}` | `Футболка базова — Чорна` |
+
+### Внутрішній writer дерева (24.10.2026; HTTP з 25–28.10)
+
+`CategoryTreeWriter` створює draft v2 category або змінює parent/order під
+`catalog_control`. `catalog_mutation_plans` тепер може містити `creation` BSON
+з відсутнім before-image лише для categories. Відкат creation перевіряє повну
+незмінність документа та залежності; звичайні patches product/SKU залишаються
+по полях. Production-активація не виконувалася.
+
+Внутрішні `deleteDraft`/`convertDraft` також працюють під gate. Перша операція
+додає `deletion` before-image тільки для невикористаної v2 draft категорії;
+друга змінює kind/definitions порожньої draft через звичайний field patch.
+Delete перевіряє також route/settings references. Rollback deletion відмовляється
+відновлювати конфліктну identity або дитину без придатного parent. Немає cascade;
+публічного HTTP немає — лише ADMIN (`/categories/:id/admin/deletion|conversion`, з 28.10).

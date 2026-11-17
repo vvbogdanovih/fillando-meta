@@ -74,11 +74,18 @@ Keep a running index of substantial documents here as they are created:
 - [Domain model](architecture/domain-model.md)
 - [State machines](architecture/state-machines.md)
 
+### Універсальний каталог і SEO — планування
+
+- [Plan-0010](plans/plan-0010-general-catalog-and-seo.md) — поетапна реалізація, залежності, критерії приймання та міграція.
+- [TD-0013](designs/TD-0013-general-catalog-and-seo.md) — **Approved (2026-10-31)**: дизайн, контракти переходу, SEO-матриця й протокол змін дерева (D03–D06); реалізація локально за Plan-0010.
+- [PDF із прикладами](reports/fillando-general-store-proposal.pdf) — пропозиція для ознайомлення, не опис реалізованого стану.
+- [План дня релізу (PDF)](reports/fillando-release-day.pdf) — шість кроків релізу каталогу v2 навколо одного скрипта (`scripts/catalog-release.mjs`); повна версія — [рунбук](runbooks/catalog-v2-release.md).
+
 ### Architecture Decision Records
 See the full list with statuses in [`adr/README.md`](adr/README.md).
 
 ### Runbooks
 
 - [Локальна MongoDB](runbooks/local-mongodb.md) — Docker Compose, дані в папці backend, backup/restore та діагностика.
-- [Railway deployment](runbooks/deploy-railway.md) · Legacy: [Backend deploy (LXC)](runbooks/deploy-backend-lxc.md) · [Frontend deploy (LXC)](runbooks/deploy-frontend-lxc.md) · [Catalogue release procedure](../repos/fillando-be/src/docs/CATALOG_RELEASE.md) (BE repo: deploy order + migrations)
+- [Railway deployment](runbooks/deploy-railway.md) (гілка `production`) · [Реліз нового каталогу — рунбук D08 для виконання власником](runbooks/catalog-v2-release.md) · [Catalogue release procedure](../repos/fillando-be/src/docs/CATALOG_RELEASE.md) (BE repo: deploy order, retained runtime contracts; §5 вказує на рунбук D08) · Застарілі, не використовувати: [Backend (LXC)](runbooks/old_deploy-backend-lxc.md) · [Frontend (LXC)](runbooks/old_deploy-frontend-lxc.md)
 - [Env template](runbooks/env-template.env)
